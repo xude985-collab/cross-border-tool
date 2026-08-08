@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+.next/
+__pycache__/
+*.pyc
+venv/
+.env
+*.db
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
