@@ -1,5 +1,4 @@
-// ─── Tab子组件 ──────────────────────────────────────────────
-// 需要在 page.tsx 主文件之后引用，单独放此文件避免单文件过大
+"use client";
 
 import { Form, Input, InputNumber, Select, Card, Divider, Row, Col,
          Table, Image, Tag, Tooltip, Space } from "antd";
