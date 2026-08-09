@@ -133,50 +133,115 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
 // ═══════════════════════════════════════════════════════════
 function TabShipping() {
   return (
-    <Card>
-      <div className="mb-4">
-        <div className="text-sm font-medium mb-2">
-          <span className="text-red-500">* </span>发货地
+    <div className="space-y-4">
+      {/* 顶部橙色提示 */}
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="text-base font-medium">
+          设置指定「发货地」及「目的地」可解锁 <span className="text-orange-500">「平台权益」</span>
         </div>
-        <Select defaultValue="CN" style={{ width: 300 }}>
-          <Option value="CN">中国大陆</Option>
-        </Select>
-      </div>
-
-      <Divider />
-
-      <div className="mb-4">
-        <div className="text-sm font-medium mb-2">
-          <span className="text-red-500">* </span>运费模版
-        </div>
-        <div className="bg-gray-50 border border-gray-200 rounded p-4">
-          <Radio.Group defaultValue="free">
-            <Space direction="vertical">
-              <Radio value="free">
-                <span className="font-medium">包邮（Free Shipping）</span>
-                <div className="text-xs text-gray-400 ml-6">卖家承担运费，买家免费收货</div>
-              </Radio>
-              <Radio value="template">
-                <span className="font-medium">使用运费模版</span>
-                <div className="text-xs text-gray-400 ml-6">按地区/重量设置不同运费</div>
-              </Radio>
-            </Space>
-          </Radio.Group>
+        <div className="text-xs text-orange-400 mt-1">
+          解锁平台权益有机会获得「Local+专属氛围」「独享爆品场景」「全域流量加持」
         </div>
       </div>
 
-      <Divider />
-
-      <div className="mb-4">
-        <div className="text-sm font-medium mb-2">备货时间</div>
-        <Select defaultValue="3" style={{ width: 200 }}>
-          {[1,2,3,5,7,10,15].map(d =>
-            <Option key={d} value={String(d)}>{d} 天</Option>
-          )}
-        </Select>
-        <div className="text-xs text-gray-400 mt-1">订单付款后到发货的准备时间</div>
+      {/* 步骤条 */}
+      <div className="flex items-center gap-2 text-sm py-2">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-orange-500" />
+          <span className="text-orange-500">发布商品设置发货地</span>
+        </div>
+        <div className="w-16 h-px bg-gray-300" />
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-orange-500" />
+          <span className="text-orange-500">运费模板设置目的地</span>
+        </div>
+        <div className="w-16 h-px bg-gray-300" />
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-orange-500" />
+          <span className="text-orange-500">报名本地链</span>
+        </div>
       </div>
-    </Card>
+
+      {/* 发货地 */}
+      <Card size="small">
+        <div className="mb-2">
+          <span className="text-red-500">* </span>
+          <span className="font-medium">发货地</span>
+          <span className="text-xs text-gray-400 ml-2">选择多个发货国的情况下，平台会按顺序先发布第一个国家的商品，其他国家商品再陆续发布。注：每个国家将单独一个商品链接。</span>
+        </div>
+
+        {/* VAT提示 */}
+        <div className="bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-3 text-xs text-blue-600">
+          <InfoCircleOutlined className="mr-1" />
+          加拿大(CA)，智利(CL)，捷克，波兰(PL)，英国(UK)，德国(DE)，西班牙(ES)，法国(FR)，意大利(IT)由于暂未开通VAT资质因此无法选择。
+          <a className="text-orange-500 ml-1">开通VAT资质</a>
+        </div>
+
+        {/* 国家复选框 */}
+        <Form.Item name="ship_from" initialValue={["US"]}>
+          <Checkbox.Group>
+            <Row gutter={[24, 12]}>
+              <Col span={6}><Checkbox value="JP">日本(JP)</Checkbox></Col>
+              <Col span={6}><Checkbox value="IL">以色列(IL)</Checkbox></Col>
+              <Col span={6}><Checkbox value="US">美国(US)</Checkbox></Col>
+              <Col span={6}><Checkbox value="AU">澳大利亚(AU)</Checkbox></Col>
+              <Col span={6}><Checkbox value="MX">墨西哥(MX)</Checkbox></Col>
+              <Col span={6}><Checkbox value="KR">韩国(KR)</Checkbox></Col>
+              <Col span={6}><Checkbox value="SA">沙特阿拉伯(SA)</Checkbox></Col>
+              <Col span={6}><Checkbox value="TR">土耳其(TR)</Checkbox></Col>
+            </Row>
+          </Checkbox.Group>
+        </Form.Item>
+      </Card>
+
+      {/* 运费模板 */}
+      <Card size="small">
+        <div className="mb-2">
+          <span className="text-red-500">* </span>
+          <span className="font-medium">运费模板</span>
+          <span className="text-xs text-gray-400 ml-2">运费模板会决定可达国家，不同发货地的部分可达国家可获平台权益。</span>
+          <a className="text-blue-500 text-xs ml-1">管理运费模板</a>
+        </div>
+
+        {/* 按国家的Tab */}
+        <Tabs
+          size="small"
+          defaultActiveKey="US"
+          items={[
+            { key: "US", label: <><span className="text-red-500">*</span>美国(US) <CheckCircleOutlined className="text-green-500" /></>,
+              children: (
+                <div>
+                  {/* 蓝色提示 */}
+                  <div className="bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-3 text-xs text-blue-600">
+                    <InfoCircleOutlined className="mr-1" />
+                    为持续提升美国市场消费者的物流体验与服务保障，平台将对官方配送线路能力可承运的商品，在消费者端默认推荐官方配送服务。
+                  </div>
+
+                  {/* 运费模板选择 */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-red-500">*</span>
+                    <span className="text-sm">美国(US)运费模板</span>
+                    <Select defaultValue="us_official" style={{ width: 300 }}>
+                      <Option value="us_official">美区物流（含官方）(Location: US)</Option>
+                      <Option value="us_standard">Standard Shipping (US)</Option>
+                      <Option value="us_free">Free Shipping (US)</Option>
+                    </Select>
+                    <Button size="small" type="link">新建运费模板</Button>
+                  </div>
+
+                  {/* 可达区域 */}
+                  <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
+                    <div className="text-gray-500 mb-1">以下为该模板可达区域，共 1 个可达区域：</div>
+                    <div className="text-gray-500">可达区域：</div>
+                    <Tag className="mt-1">美国(US)</Tag>
+                  </div>
+                </div>
+              ),
+            },
+          ]}
+        />
+      </Card>
+    </div>
   );
 }
 
