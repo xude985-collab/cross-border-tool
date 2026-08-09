@@ -21,7 +21,6 @@ import io
 import httpx
 import asyncio
 from PIL import Image, ImageDraw, ImageFont
-from rembg import remove
 from app.core.config import settings
 
 
@@ -32,11 +31,23 @@ async def download_image(url: str) -> Image.Image:
         return Image.open(io.BytesIO(resp.content)).convert("RGBA")
 
 
-def remove_background(img: Image.Image) -> Image.Image:
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    result = remove(buf.getvalue())
-    return Image.open(io.BytesIO(result)).convert("RGBA")
+async def remove_background(img: Image.Image) -> Image.Image:
+    """用 remove.bg API 抠图（免费50张/月），失败则返回原图"""
+    try:
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(
+                "https://api.remove.bg/v1.0/removebg",
+                headers={"X-Api-Key": settings.removebg_key},
+                files={"image_file": ("img.png", buf.getvalue(), "image/png")},
+                data={"size": "auto"},
+            )
+            if resp.status_code == 200:
+                return Image.open(io.BytesIO(resp.content)).convert("RGBA")
+    except Exception:
+        pass
+    return img
 
 
 def compose_on_white(fg: Image.Image, size=(800, 1000), padding=0.08) -> Image.Image:
@@ -243,8 +254,8 @@ async def process_all_images(product_data: dict) -> dict:
     back_img = source_imgs[1] if len(source_imgs) > 1 else source_imgs[0]
 
     # ---------- 抠图 ----------
-    front_fg = remove_background(front_img)
-    back_fg = remove_background(back_img)
+    front_fg = await remove_background(front_img)
+    back_fg = await remove_background(back_img)
 
     # ===== 主图1: 正面模特白底图 =====
     main1 = compose_on_white(front_fg, (800, 1000))

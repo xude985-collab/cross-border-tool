@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     oss_access_key_secret: str = ""
     oss_bucket_name: str = "cross-border-images"
     oss_endpoint: str = "https://oss-cn-hangzhou.aliyuncs.com"
+    removebg_key: str = ""
     secret_key: str = "changeme"
 
     class Config:
