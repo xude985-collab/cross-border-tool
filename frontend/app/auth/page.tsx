@@ -11,7 +11,7 @@ export default function AuthPage() {
   const onLogin = async (values: any) => {
     setLoading(true);
     try {
-      const res = await fetch("https://api.tukeng.com.cn/api/users/login", {
+      const res = await fetch("https://cross-border-tool.onrender.com/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
@@ -32,7 +32,7 @@ export default function AuthPage() {
   const onRegister = async (values: any) => {
     setLoading(true);
     try {
-      const res = await fetch("https://api.tukeng.com.cn/api/users/register", {
+      const res = await fetch("https://cross-border-tool.onrender.com/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

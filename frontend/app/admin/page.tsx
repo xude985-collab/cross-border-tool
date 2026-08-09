@@ -26,7 +26,7 @@ export default function AdminPage() {
 
     try {
       // 获取当前用户信息
-      const meRes = await fetch("https://api.tukeng.com.cn/api/users/me", {
+      const meRes = await fetch("https://cross-border-tool.onrender.com/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!meRes.ok) throw new Error("未登录");
@@ -40,7 +40,7 @@ export default function AdminPage() {
       }
 
       // 获取所有用户
-      const usersRes = await fetch("https://api.tukeng.com.cn/api/users/", {
+      const usersRes = await fetch("https://cross-border-tool.onrender.com/api/users/", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!usersRes.ok) throw new Error("获取用户列表失败");
@@ -58,7 +58,7 @@ export default function AdminPage() {
     const token = localStorage.getItem("token");
     setCreateLoading(true);
     try {
-      const res = await fetch("https://api.tukeng.com.cn/api/users/register", {
+      const res = await fetch("https://cross-border-tool.onrender.com/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +88,7 @@ export default function AdminPage() {
 
     try {
       const res = await fetch(
-        `https://api.tukeng.com.cn/api/users/${userId}/status?status=${newStatus}`,
+        `https://cross-border-tool.onrender.com/api/users/${userId}/status?status=${newStatus}`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },

@@ -11,7 +11,7 @@ export default function SetupPage() {
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-      const res = await fetch("https://api.tukeng.com.cn/api/admin-setup/create-first-admin", {
+      const res = await fetch("https://cross-border-tool.onrender.com/api/admin-setup/create-first-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
