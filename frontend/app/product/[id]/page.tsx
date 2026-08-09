@@ -68,17 +68,49 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
           <Row gutter={16}>
             {/* ─── 左侧主表单 ─── */}
             <Col span={18}>
-              <Tabs
-                type="card"
-                defaultActiveKey="shipping"
-                items={[
-                  { key: "shipping", label: "发货地与运费模版", children: <TabShipping /> },
-                  { key: "basic", label: "基本信息", children: <TabBasicInfo product={product} /> },
-                  { key: "price", label: "供货价", children: <TabPrice product={product} /> },
-                  { key: "desc", label: "详细描述", children: <TabDescription product={product} /> },
-                  { key: "other", label: "其它设置", children: <TabOther /> },
-                ]}
-              />
+              {/* 锚点导航条 */}
+              <div className="sticky top-[52px] z-40 bg-white border border-gray-200 rounded-lg px-4 py-2 mb-4 flex items-center gap-6">
+                {[
+                  { id: "shipping", label: "发货地与运费模版" },
+                  { id: "basic", label: "基本信息" },
+                  { id: "price", label: "供货价" },
+                  { id: "desc", label: "详细描述" },
+                  { id: "other", label: "其它设置" },
+                ].map(item => (
+                  <a key={item.id} href={`#${item.id}`}
+                    className="text-sm text-gray-600 hover:text-blue-600 whitespace-nowrap cursor-pointer">
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+
+              {/* 所有区块从上到下排列 */}
+              <div className="space-y-6">
+                <div id="shipping">
+                  <div className="text-lg font-medium mb-3 pb-2 border-b border-gray-200">发货地与运费模版</div>
+                  <TabShipping />
+                </div>
+
+                <div id="basic">
+                  <div className="text-lg font-medium mb-3 pb-2 border-b border-gray-200">基本信息</div>
+                  <TabBasicInfo product={product} />
+                </div>
+
+                <div id="price">
+                  <div className="text-lg font-medium mb-3 pb-2 border-b border-gray-200">供货价</div>
+                  <TabPrice product={product} />
+                </div>
+
+                <div id="desc">
+                  <div className="text-lg font-medium mb-3 pb-2 border-b border-gray-200">详细描述</div>
+                  <TabDescription product={product} />
+                </div>
+
+                <div id="other">
+                  <div className="text-lg font-medium mb-3 pb-2 border-b border-gray-200">其它设置</div>
+                  <TabOther />
+                </div>
+              </div>
             </Col>
 
             {/* ─── 右侧信息完整度面板 ─── */}
