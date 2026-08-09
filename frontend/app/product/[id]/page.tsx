@@ -198,7 +198,8 @@ function TabShipping() {
       <Card size="small">
         <div className="mb-2">
           <span className="text-red-500">* </span>
-          <span className="font-medium">运费模板</span>
+          <span className="font-medium text-red-500">运费模板</span>
+          <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 ml-1" /></Tooltip>
           <span className="text-xs text-gray-400 ml-2">运费模板会决定可达国家，不同发货地的部分可达国家可获平台权益。</span>
           <a className="text-blue-500 text-xs ml-1">管理运费模板</a>
         </div>
@@ -211,29 +212,77 @@ function TabShipping() {
             { key: "US", label: <><span className="text-red-500">*</span>美国(US) <CheckCircleOutlined className="text-green-500" /></>,
               children: (
                 <div>
-                  {/* 蓝色提示 */}
                   <div className="bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-3 text-xs text-blue-600">
                     <InfoCircleOutlined className="mr-1" />
-                    为持续提升美国市场消费者的物流体验与服务保障，平台将对官方配送线路能力可承运的商品，在消费者端默认推荐官方配送服务。
+                    为持续提升美国市场消费者的物流体验与服务保障，平台将对官方配送线路能力可承运的商品，在消费者端默认推荐官方配送服务。请参照官方配送线路介绍及价卡配置商品含邮供货价。
                   </div>
-
-                  {/* 运费模板选择 */}
                   <div className="flex items-center gap-3 mb-3">
                     <span className="text-red-500">*</span>
                     <span className="text-sm">美国(US)运费模板</span>
-                    <Select defaultValue="us_official" style={{ width: 300 }}>
-                      <Option value="us_official">美区物流（含官方）(Location: US)</Option>
-                      <Option value="us_standard">Standard Shipping (US)</Option>
-                      <Option value="us_free">Free Shipping (US)</Option>
+                    <Select defaultValue="us_local" style={{ width: 360 }}>
+                      <Option value="us_official">本地供给店铺官方模板 (Location: DE,IL,JP,CL,MX,IT,FR,ES,AU,UK,CZ,PL,US,CA)</Option>
+                      <Option value="us_local">美区物流（含官方）(Location: US)</Option>
                     </Select>
-                    <Button size="small" type="link">新建运费模板</Button>
+                    <a className="text-blue-500 text-sm">新建运费模板</a>
                   </div>
-
-                  {/* 可达区域 */}
                   <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
-                    <div className="text-gray-500 mb-1">以下为该模板可达区域，共 1 个可达区域：</div>
-                    <div className="text-gray-500">可达区域：</div>
-                    <Tag className="mt-1">美国(US)</Tag>
+                    <Tag>美国(US)</Tag>
+                  </div>
+                </div>
+              ),
+            },
+            { key: "JP", label: <><span className="text-red-500">*</span>日本(JP) <InfoCircleOutlined className="text-gray-400" /></>,
+              children: (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-red-500">*</span>
+                    <span className="text-sm">日本(JP)运费模板</span>
+                    <Select placeholder="请选择运费模板" style={{ width: 360 }}>
+                      <Option value="jp_official">本地供给店铺官方模板 (Location: DE,IL,JP,CL,MX,IT,FR,ES,AU,UK,CZ,PL,US,CA)</Option>
+                    </Select>
+                    <a className="text-blue-500 text-sm">新建运费模板</a>
+                  </div>
+                </div>
+              ),
+            },
+            { key: "IL", label: <><span className="text-red-500">*</span>以色列(IL) <InfoCircleOutlined className="text-gray-400" /></>,
+              children: (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-red-500">*</span>
+                    <span className="text-sm">以色列(IL)运费模板</span>
+                    <Select placeholder="请选择运费模板" style={{ width: 360 }}>
+                      <Option value="il_official">本地供给店铺官方模板 (Location: DE,IL,JP,CL,MX,IT,FR,ES,AU,UK,CZ,PL,US,CA)</Option>
+                    </Select>
+                    <a className="text-blue-500 text-sm">新建运费模板</a>
+                  </div>
+                </div>
+              ),
+            },
+            { key: "AU", label: <><span className="text-red-500">*</span>澳大利亚(AU) <InfoCircleOutlined className="text-gray-400" /></>,
+              children: (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-red-500">*</span>
+                    <span className="text-sm">澳大利亚(AU)运费模板</span>
+                    <Select placeholder="请选择运费模板" style={{ width: 360 }}>
+                      <Option value="au_official">本地供给店铺官方模板 (Location: DE,IL,JP,CL,MX,IT,FR,ES,AU,UK,CZ,PL,US,CA)</Option>
+                    </Select>
+                    <a className="text-blue-500 text-sm">新建运费模板</a>
+                  </div>
+                </div>
+              ),
+            },
+            { key: "MX", label: <><span className="text-red-500">*</span>墨西哥(MX) <InfoCircleOutlined className="text-gray-400" /></>,
+              children: (
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-red-500">*</span>
+                    <span className="text-sm">墨西哥(MX)运费模板</span>
+                    <Select placeholder="请选择运费模板" style={{ width: 360 }}>
+                      <Option value="mx_official">本地供给店铺官方模板 (Location: DE,IL,JP,CL,MX,IT,FR,ES,AU,UK,CZ,PL,US,CA)</Option>
+                    </Select>
+                    <a className="text-blue-500 text-sm">新建运费模板</a>
                   </div>
                 </div>
               ),
