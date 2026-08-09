@@ -686,9 +686,16 @@ function TabBasicInfo({ product }: { product: any }) {
 // Tab 3: 供货价（仿速卖通）
 // ═══════════════════════════════════════════════════════════
 function TabPrice({ product }: { product: any }) {
+  const countries = [
+    { key: "US", label: "美国(US)" },
+    { key: "JP", label: "日本(JP)" },
+    { key: "IL", label: "以色列(IL)" },
+    { key: "AU", label: "澳大利亚(AU)" },
+    { key: "MX", label: "墨西哥(MX)" },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="text-xl font-medium">供货价</div>
 
       {/* 最小计量单元 */}
       <div className="flex items-center gap-4">
@@ -721,8 +728,8 @@ function TabPrice({ product }: { product: any }) {
       </div>
 
       {/* 分目的国/地区设置 */}
-      <div className="flex items-center gap-2 ml-6">
-        <span className="text-sm text-orange-500">分目的国/地区设置</span>
+      <div className="flex items-center gap-2 ml-0">
+        <span className="text-sm text-gray-700">分目的国/地区设置</span>
         <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
         <Checkbox>支持</Checkbox>
       </div>
@@ -738,62 +745,85 @@ function TabPrice({ product }: { product: any }) {
         <Button>批量填充</Button>
       </div>
 
-      {/* SKU价格表格 */}
+      {/* SKU价格表格 - 每个国家一行 */}
       <div className="overflow-x-auto">
-        <Table
-          size="small"
-          pagination={false}
-          bordered
-          scroll={{ x: 1200 }}
-          dataSource={[{ key: 1, country: "美国(US)" }]}
-          columns={[
-            { title: "发货地", dataIndex: "country", key: "country", width: 100, fixed: "left" },
-            { title: <><span className="text-red-500">*</span> 货值+物流费=含邮供货价(CNY) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "price_cny", width: 250,
-              render: () => (
-                <div className="text-sm">
-                  <div className="text-gray-500">全球/其他</div>
-                  <div>货值 - | 物流费 - | 含邮供货价 -</div>
-                  <a className="text-orange-500">设置货值与物流费</a>
-                </div>
-              )},
-            { title: <><span className="text-red-500">*</span> 库存</>, key: "stock", width: 100,
-              render: () => <InputNumber size="small" min={0} style={{ width: 80 }} /> },
-            { title: <>SKU编码 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "sku", width: 140,
-              render: () => <Input size="small" placeholder="" suffix={<span className="text-xs text-gray-400">0/50</span>} /> },
-            { title: <><span className="text-red-500">*</span> 重量 (kg) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "weight", width: 120,
-              render: () => <InputNumber size="small" min={0} step={0.01} style={{ width: 100 }} /> },
-            { title: <><span className="text-red-500">*</span> 尺寸 (cm) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "size", width: 220,
-              render: () => (
-                <Space size={4}>
-                  <InputNumber size="small" placeholder="长" style={{ width: 55 }} />
-                  <span>*</span>
-                  <InputNumber size="small" placeholder="宽" style={{ width: 55 }} />
-                  <span>*</span>
-                  <InputNumber size="small" placeholder="高" style={{ width: 55 }} />
-                </Space>
-              )},
-            { title: <>特殊商品类型 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "special_type", width: 130,
-              render: () => <Select size="small" defaultValue="normal" style={{ width: 100 }}>
-                <Option value="normal">普货</Option>
-                <Option value="sensitive">敏感货</Option>
-                <Option value="battery">含电池</Option>
-              </Select> },
-            { title: <>是否销售 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
-              key: "on_sale", width: 100,
-              render: () => <Switch defaultChecked checkedChildren="是" unCheckedChildren="否" /> },
-          ]}
-        />
+        <table className="w-full border-collapse border border-gray-200 text-sm">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[100px]">发货地</th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[280px]">
+                <span className="text-red-500">*</span>
+                <span className="text-orange-500"> 货值+物流费=含邮供货价(CNY)</span>
+                <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 ml-1" /></Tooltip>
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[100px]">
+                <span className="text-red-500">*</span> 库存
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[140px]">
+                SKU编码 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip>
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[120px]">
+                <span className="text-red-500">*</span> 重量 (kg) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip>
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[220px]">
+                <span className="text-red-500">*</span> 尺寸 (cm) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip>
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[130px]">
+                特殊商品类型 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip>
+              </th>
+              <th className="border border-gray-200 px-3 py-2 text-center font-normal w-[80px]">
+                是否销售 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {countries.map(c => (
+              <tr key={c.key}>
+                <td className="border border-gray-200 px-3 py-3 text-center align-top">
+                  {c.label}
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <div className="text-blue-500 text-xs">全球/其他</div>
+                  <div className="text-sm text-gray-600 mt-1">货值 - | 物流费 - | 含邮供货价 -</div>
+                  <a className="text-orange-500 text-xs mt-1 inline-block">设置货值与物流费</a>
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <Input size="small" style={{ width: 90 }} />
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <Input size="small" suffix={<span className="text-xs text-gray-400">0/50</span>} />
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <Input size="small" style={{ width: 100 }} />
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <Space size={4}>
+                    <Input size="small" placeholder="长" style={{ width: 55 }} />
+                    <span>*</span>
+                    <Input size="small" placeholder="宽" style={{ width: 55 }} />
+                    <span>*</span>
+                    <Input size="small" placeholder="高" style={{ width: 55 }} />
+                  </Space>
+                </td>
+                <td className="border border-gray-200 px-3 py-3 align-top">
+                  <Select size="small" defaultValue="normal" style={{ width: 100 }}>
+                    <Option value="normal">普货</Option>
+                    <Option value="sensitive">敏感货</Option>
+                    <Option value="battery">含电池</Option>
+                  </Select>
+                </td>
+                <td className="border border-gray-200 px-3 py-3 text-center align-top">
+                  <Switch defaultChecked checkedChildren="是" unCheckedChildren="否" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* 底部提示 */}
       <div className="text-sm">
-        <span className="text-gray-500">总库存: </span>
-        <span className="text-orange-500 font-medium">0</span>
+        <span className="text-orange-500 font-medium">总库存: 0</span>
         <span className="text-gray-500 ml-4">为确保新品孵化成功，平台将在</span>
         <span className="text-red-500">新发品72h内限制所有SKU库存下调</span>
         <span className="text-gray-500">，请谨慎填写</span>
@@ -971,7 +1001,6 @@ function TabDescription({ product }: { product: any }) {
 function TabOther() {
   return (
     <div className="space-y-8">
-      <div className="text-xl font-medium">其它设置</div>
 
       {/* 资质信息 */}
       <div className="flex items-start gap-4">
