@@ -23,7 +23,10 @@ TITLE_PROMPT = """你是亚马逊跨境电商爆款标题专家，精通服装�
 - 主要特点：{features}
 
 请严格按照以下公式生成英文标题：
-【核心卖点】+【目标人群】+【产品特征】+【热搜词】+【长尾词】
+【核心卖点】+【对象（男/女）】+【产品特点】+【热搜词】+【长尾词】
+
+比如中文逻辑：单连衣裙 女性 有口袋 高弹性 夏季可游泳
+对应英文：One Piece Dress Women Pockets High Elastic Summer Swimwear Beach Cover Up
 
 规则：
 1. 总字符数不超过200个字符
@@ -31,6 +34,7 @@ TITLE_PROMPT = """你是亚马逊跨境电商爆款标题专家，精通服装�
 3. 不使用促销词（Best/Top/Sale/Cheap/Free）
 4. 核心关键词放前面（权重最高）
 5. 包含2-3个亚马逊高搜索量关键词
+6. 必须包含性别词（Women/Men/Girls/Boys）
 
 示例参考：
 Women's Oversized Linen Blazer Jacket 2024 Summer Lightweight Breathable Business Casual Office Long Sleeve Single Breasted Loose Fit Outerwear

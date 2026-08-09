@@ -602,61 +602,113 @@ function TabBasicInfo({ product }: { product: any }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Tab 3: 供货价
+// Tab 3: 供货价（仿速卖通）
 // ═══════════════════════════════════════════════════════════
 function TabPrice({ product }: { product: any }) {
   return (
-    <Card>
-      <div className="mb-6">
-        <div className="text-sm font-medium mb-3">定价方式</div>
-        <Radio.Group defaultValue="unified">
-          <Radio value="unified">统一售价</Radio>
-          <Radio value="sku">按SKU分别定价</Radio>
-        </Radio.Group>
+    <div className="space-y-6">
+      <div className="text-xl font-medium">供货价</div>
+
+      {/* 最小计量单元 */}
+      <div className="flex items-center gap-4">
+        <span className="text-red-500">*</span>
+        <span className="text-sm text-gray-700 w-[100px]">最小计量单元</span>
+        <Select defaultValue="piece" style={{ width: 280 }}>
+          <Option value="piece">件/个 (piece/pieces)</Option>
+          <Option value="set">套 (set/sets)</Option>
+          <Option value="pair">双 (pair/pairs)</Option>
+          <Option value="lot">批 (lot/lots)</Option>
+        </Select>
       </div>
 
-      <Divider />
+      {/* 销售方式 */}
+      <div className="flex items-center gap-4">
+        <span className="text-red-500">*</span>
+        <span className="text-sm text-gray-700 w-[100px]">销售方式</span>
+        <Select defaultValue="by_piece" style={{ width: 280 }}>
+          <Option value="by_piece">按 件 出售</Option>
+          <Option value="by_lot">按 批 出售</Option>
+        </Select>
+      </div>
 
-      <Row gutter={24}>
-        <Col span={8}>
-          <Form.Item label={<><span className="text-red-500">* </span>商品售价 (USD)</>} name="price_final">
-            <InputNumber min={0.01} step={0.01} prefix="$" style={{ width: "100%" }} size="large" />
-          </Form.Item>
-        </Col>
-        <Col span={8}>
-          <Form.Item label="划线价 / 原价 (USD)" name="price_original">
-            <InputNumber min={0} step={0.01} prefix="$" style={{ width: "100%" }}
-              placeholder="可选，显示折扣" />
-          </Form.Item>
-        </Col>
-        <Col span={8}>
-          <div className="mt-8 p-3 bg-blue-50 rounded text-sm">
-            <div className="text-gray-500">1688进货价</div>
-            <div className="text-lg font-bold">¥{product.price_source || "—"}</div>
-            <div className="text-xs text-gray-400">× {product.price_multiplier || 3} 倍率 = ${product.price_final || "—"}</div>
-          </div>
-        </Col>
-      </Row>
+      {/* 销售属性 */}
+      <div className="flex items-center gap-4">
+        <span className="text-sm text-gray-700 ml-6 w-[100px]">销售属性</span>
+        <Button type="primary" style={{ background: "#1677ff" }}>
+          添加属性（0/2）
+        </Button>
+      </div>
 
-      <Divider />
+      {/* 分目的国/地区设置 */}
+      <div className="flex items-center gap-2 ml-6">
+        <span className="text-sm text-orange-500">分目的国/地区设置</span>
+        <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+        <Checkbox>支持</Checkbox>
+      </div>
+      <div className="ml-[130px] text-sm text-gray-500">含邮供货价</div>
 
-      <div>
-        <div className="text-sm font-medium mb-2">批发价 / 阶梯价（可选）</div>
-        <div className="text-xs text-gray-400 mb-3">设置购买数量越多价格越低，吸引批发买家</div>
-        <Table size="small" pagination={false}
-          dataSource={[
-            { qty: "1-4件", price: product.price_final || "—" },
-            { qty: "5-9件", discount: "5%", price: ((product.price_final || 0) * 0.95).toFixed(2) },
-            { qty: "10+件", discount: "10%", price: ((product.price_final || 0) * 0.9).toFixed(2) },
-          ]}
+      {/* 查看重量和尺寸测量规范示例 */}
+      <div className="ml-6">
+        <a className="text-blue-500 text-sm">查看重量和尺寸测量规范示例</a>
+      </div>
+
+      {/* 批量填充按钮 */}
+      <div className="flex justify-end">
+        <Button>批量填充</Button>
+      </div>
+
+      {/* SKU价格表格 */}
+      <div className="overflow-x-auto">
+        <Table
+          size="small"
+          pagination={false}
+          bordered
+          scroll={{ x: 1100 }}
+          dataSource={[{ key: 1, country: "美国(US)" }]}
           columns={[
-            { title: "购买数量", dataIndex: "qty" },
-            { title: "折扣", dataIndex: "discount", render: (v: any) => v || "原价" },
-            { title: "单价 (USD)", dataIndex: "price", render: (v: any) => `$${v}` },
+            { title: "发货地", dataIndex: "country", key: "country", width: 100, fixed: "left" },
+            { title: <><span className="text-red-500">*</span> 库存</>, key: "stock", width: 100,
+              render: () => <InputNumber size="small" min={0} style={{ width: 80 }} /> },
+            { title: <><span>SKU编码</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "sku", width: 140,
+              render: () => <Input size="small" placeholder="" suffix={<span className="text-xs text-gray-400">0/50</span>} /> },
+            { title: <><span className="text-red-500">*</span> 重量 (kg) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "weight", width: 120,
+              render: () => <InputNumber size="small" min={0} step={0.01} style={{ width: 100 }} /> },
+            { title: <><span className="text-red-500">*</span> 尺寸 (cm) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "size", width: 220,
+              render: () => (
+                <Space size={4}>
+                  <InputNumber size="small" placeholder="长" style={{ width: 55 }} />
+                  <span>*</span>
+                  <InputNumber size="small" placeholder="宽" style={{ width: 55 }} />
+                  <span>*</span>
+                  <InputNumber size="small" placeholder="高" style={{ width: 55 }} />
+                </Space>
+              )},
+            { title: <><span>特殊商品类型</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "special_type", width: 130,
+              render: () => <Select size="small" defaultValue="normal" style={{ width: 100 }}>
+                <Option value="normal">普货</Option>
+                <Option value="sensitive">敏感货</Option>
+                <Option value="battery">含电池</Option>
+              </Select> },
+            { title: <><span>是否销售</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "on_sale", width: 100,
+              render: () => <Switch defaultChecked checkedChildren="是" unCheckedChildren="否" /> },
           ]}
         />
       </div>
-    </Card>
+
+      {/* 底部提示 */}
+      <div className="text-sm">
+        <span className="text-gray-500">总库存: </span>
+        <span className="text-orange-500 font-medium">0</span>
+        <span className="text-gray-500 ml-4">为确保新品孵化成功，平台将在</span>
+        <span className="text-red-500">新发品72h内限制所有SKU库存下调</span>
+        <span className="text-gray-500">，请谨慎填写</span>
+      </div>
+    </div>
   );
 }
 
