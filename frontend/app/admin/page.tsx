@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Table, Switch, Tag, message, Button, Modal, Form, Input } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, KeyOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 
 export default function AdminPage() {
@@ -11,7 +11,10 @@ export default function AdminPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [passwordUserId, setPasswordUserId] = useState<number | null>(null);
   const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
 
   useEffect(() => {
     checkAuth();
@@ -103,6 +106,31 @@ export default function AdminPage() {
     }
   };
 
+  const handleChangePassword = async (values: any) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        `https://cross-border-tool.onrender.com/api/users/${passwordUserId}/password`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ password: values.password }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "修改失败");
+      }
+      message.success("密码修改成功");
+      setPasswordModalOpen(false);
+    } catch (err: any) {
+      message.error(err.message);
+    }
+  };
+
   const columns = [
     { title: "ID", dataIndex: "id", width: 80 },
     { title: "邮箱", dataIndex: "email" },
@@ -133,6 +161,22 @@ export default function AdminPage() {
       title: "注册时间",
       dataIndex: "created_at",
       render: (date: string) => new Date(date).toLocaleString("zh-CN"),
+    },
+    {
+      title: "操作",
+      render: (_: any, record: any) => (
+        <Button
+          type="link"
+          icon={<KeyOutlined />}
+          onClick={() => {
+            setPasswordUserId(record.id);
+            setPasswordModalOpen(true);
+            passwordForm.resetFields();
+          }}
+        >
+          修改密码
+        </Button>
+      ),
     },
   ];
 
@@ -191,6 +235,45 @@ export default function AdminPage() {
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={createLoading} block>
               创建
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 修改密码弹窗 */}
+      <Modal
+        title="修改密码"
+        open={passwordModalOpen}
+        onCancel={() => setPasswordModalOpen(false)}
+        footer={null}
+      >
+        <Form form={passwordForm} onFinish={handleChangePassword} layout="vertical">
+          <Form.Item
+            label="新密码"
+            name="password"
+            rules={[{ required: true, min: 6, message: "密码至少6位" }]}
+          >
+            <Input.Password placeholder="至少6位" />
+          </Form.Item>
+          <Form.Item
+            label="确认密码"
+            name="confirm"
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "请确认密码" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) return Promise.resolve();
+                  return Promise.reject(new Error("两次密码不一致"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="再次输入密码" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              确认修改
             </Button>
           </Form.Item>
         </Form>

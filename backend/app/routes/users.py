@@ -80,6 +80,25 @@ def list_users(
     return users
 
 
+@router.put("/{user_id}/password")
+def change_user_password(
+    user_id: int,
+    data: dict,
+    current_admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    """管理员：修改用户密码"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    new_password = data.get("password")
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    user.hashed_password = User.get_password_hash(new_password)
+    db.commit()
+    return {"message": f"Password updated for {user.email}"}
+
+
 @router.patch("/{user_id}/status")
 def update_user_status(
     user_id: int,
