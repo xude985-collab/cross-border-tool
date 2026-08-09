@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import products, batches, upload
+from app.routes import users
 from app.core.database import engine, Base
 
 Base.metadata.create_all(bind=engine)
@@ -18,6 +19,7 @@ app.add_middleware(
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(batches.router, prefix="/api/batches", tags=["batches"])
 app.include_router(upload.router, prefix="/api/upload", tags=["upload"])
+app.include_router(users.router)  # 用户系统
 
 @app.get("/health")
 def health():
