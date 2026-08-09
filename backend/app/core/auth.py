@@ -33,10 +33,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def verify_token(token: str) -> TokenData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
+        user_id = int(payload.get("sub", 0))
         email: str = payload.get("email")
         role: str = payload.get("role")
-        if user_id is None or email is None:
+        if user_id == 0 or email is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
