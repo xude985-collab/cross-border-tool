@@ -257,35 +257,39 @@ async def process_all_images(product_data: dict) -> dict:
     front_fg = await remove_background(front_img)
     back_fg = await remove_background(back_img)
 
-    # ===== 主图1: 正面模特白底图 9:16竖版 =====
-    main1 = compose_on_white(front_fg, (900, 1600))
+    # 所有主图统一 9:16 竖版 (900×1600)，全部带模特
+    IMG_SIZE = (900, 1600)
+
+    # ===== 主图1: 正面模特白底图 9:16 =====
+    main1 = compose_on_white(front_fg, IMG_SIZE)
     result["main_1"] = img_to_bytes(main1)
 
-    # ===== 主图2: 背面模特白底图 =====
-    main2 = compose_on_white(back_fg, (800, 1000))
+    # ===== 主图2: 背面模特白底图 9:16 =====
+    main2 = compose_on_white(back_fg, IMG_SIZE)
     result["main_2"] = img_to_bytes(main2)
 
-    # ===== 主图3: 正面+背面合并白底图 =====
-    main3 = merge_two_images(main1, main2, (1600, 1000))
+    # ===== 主图3: 正面+背面模特合并白底图 9:16 =====
+    main3 = merge_two_images(main1, main2, (900, 1600), gap=10)
     result["main_3"] = img_to_bytes(main3)
 
-    # ===== 主图4/5: 场景图（Flux Pro AI生成）=====
+    # ===== 主图4/5: 模特场景图 9:16（AI生成，带模特）=====
     style = attrs.get("风格", attrs.get("Style", "casual"))
     material = attrs.get("材质", attrs.get("面料", "fabric"))
     garment_desc = f"{title_en}, {style} style, {material} material"
 
     scenes = [
-        ("urban street scene, city background, natural daylight", "portrait_4_3"),
-        ("cozy indoor coffee shop, warm lighting, lifestyle photography", "portrait_4_3"),
+        "urban street scene, city background, natural daylight, full body model shot",
+        "cozy indoor coffee shop, warm lighting, lifestyle photography, full body model shot",
     ]
     scene_imgs_bytes = []
-    for scene_prompt, aspect in scenes:
+    for scene_prompt in scenes:
         try:
             flux_prompt = (
                 f"Professional fashion photography, female model wearing {garment_desc}, "
-                f"{scene_prompt}, editorial style, high resolution commercial photo, 4k"
+                f"{scene_prompt}, 9:16 vertical portrait, editorial style, "
+                f"high resolution commercial photo, full body visible, 4k"
             )
-            scene_bytes = await generate_flux_image(flux_prompt, aspect)
+            scene_bytes = await generate_flux_image(flux_prompt, "portrait_9_16")
             scene_imgs_bytes.append(scene_bytes)
         except Exception as e:
             print(f"场景图生成失败: {e}")
@@ -295,45 +299,54 @@ async def process_all_images(product_data: dict) -> dict:
     if len(scene_imgs_bytes) > 1:
         result["main_5"] = scene_imgs_bytes[1]
 
-    # ===== 主图6/7: 细节图（裁剪源图细节区域）=====
+    # ===== 主图6/7: 模特细节图 9:16（裁剪源图保留模特）=====
     for i, detail_idx in enumerate([2, 3]):
         src = source_imgs[detail_idx] if detail_idx < len(source_imgs) else source_imgs[-1]
-        # 裁剪中心区域放大作为细节图
+        # 保留模特，裁剪为9:16竖版
         w, h = src.size
-        crop = src.crop((w // 6, h // 4, w * 5 // 6, h * 3 // 4)).convert("RGB")
-        crop_resized = crop.resize((800, 800), Image.LANCZOS)
+        target_ratio = 9 / 16
+        current_ratio = w / h
+        if current_ratio > target_ratio:
+            new_w = int(h * target_ratio)
+            left = (w - new_w) // 2
+            crop = src.crop((left, 0, left + new_w, h))
+        else:
+            new_h = int(w / target_ratio)
+            top = (h - new_h) // 4  # 偏上裁剪保留模特头部
+            crop = src.crop((0, top, w, top + new_h))
+        crop_resized = crop.convert("RGB").resize(IMG_SIZE, Image.LANCZOS)
         result[f"main_{6+i}"] = img_to_bytes(crop_resized)
 
-    # ===== 主图8: 多场景合并图 =====
+    # ===== 主图8: 多场景模特合并图 9:16 =====
     scene_pil_imgs = []
     for b in scene_imgs_bytes:
         scene_pil_imgs.append(Image.open(io.BytesIO(b)).convert("RGB"))
-    # 补充白底图
     while len(scene_pil_imgs) < 2:
         scene_pil_imgs.append(main1)
     all_for_grid = [main1, main2] + scene_pil_imgs[:2]
-    main8 = merge_four_scenes(all_for_grid, (1600, 1600))
+    main8 = merge_four_scenes(all_for_grid, IMG_SIZE)
     result["main_8"] = img_to_bytes(main8)
 
-    # ===== 主图9: 尺码指引图 =====
-    main9 = make_size_guide(skus, title_en)
+    # ===== 主图9: 尺码指引图 9:16（带模特轮廓）=====
+    main9 = make_size_guide(skus, title_en, IMG_SIZE)
     result["main_9"] = img_to_bytes(main9)
 
-    # ===== 1:1 白底主图（速卖通封面）=====
-    white_sq = compose_on_white(front_fg, (800, 800), padding=0.1)
+    # ===== 1:1 白底模特主图（模特穿衣服，白底）=====
+    white_sq = compose_on_white(front_fg, (800, 800), padding=0.05)
     result["white_1_1"] = img_to_bytes(white_sq)
 
-    # ===== 3:4 竖版场景图 =====
+    # ===== 3:4 模特场景图（模特穿衣服的场景图）=====
     try:
         scene_34_prompt = (
             f"Professional fashion photography, female model wearing {garment_desc}, "
-            f"elegant outdoor scene, soft natural light, 3:4 vertical portrait, "
-            f"high resolution commercial photography"
+            f"elegant outdoor scene, soft natural light, full body model shot, "
+            f"3:4 vertical portrait, high resolution commercial photography, 4k"
         )
         result["scene_3_4"] = await generate_flux_image(scene_34_prompt, "portrait_4_3")
     except Exception as e:
         print(f"3:4场景图生成失败: {e}")
-        result["scene_3_4"] = img_to_bytes(compose_on_white(front_fg, (600, 800)))
+        # 失败时用抠图模特贴白底
+        result["scene_3_4"] = img_to_bytes(compose_on_white(front_fg, (750, 1000)))
 
     # ===== 10张详情图 =====
     detail_content_imgs = source_imgs[2:] if len(source_imgs) > 2 else source_imgs
