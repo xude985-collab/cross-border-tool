@@ -74,25 +74,58 @@ async def ensure_model_image(img: Image.Image, garment_desc: str, idx: int) -> I
     """
     确保图片有模特：
     - 如果原图有模特 → 直接返回
-    - 如果没有模特 → 用AI直接生成模特穿衣图
+    - 如果没有模特 → 用虚拟试穿把这件真实衣服穿到AI模特身上
     """
     if has_model(img):
         return img
 
-    # 没有模特，纯AI生成模特穿衣服图片
+    # 没有模特，用虚拟试穿：真实衣服 + AI模特 → 模特穿真实衣服
     try:
-        import random
-        seed = random.randint(0, 999999) + idx
+        import base64
+
+        # Step 1: 生成一个AI模特（穿基础衣服的全身照）
+        seed = hash(garment_desc) % 999999 + idx
         model_desc = get_random_model_desc(seed)
-        prompt = (
+        model_prompt = (
             f"Professional fashion photography, {model_desc}, "
-            f"wearing {garment_desc}, full body shot, "
-            f"white background, high resolution commercial photo, 9:16 vertical, 4k"
+            f"wearing plain white t-shirt and beige pants, full body shot, "
+            f"white background, high resolution, 4k, studio lighting"
         )
-        result_bytes = await generate_flux_image(prompt, "portrait_9_16")
-        return Image.open(io.BytesIO(result_bytes)).convert("RGBA")
+        async with httpx.AsyncClient(timeout=120) as client:
+            model_resp = await client.post(
+                "https://fal.run/fal-ai/flux/dev",
+                headers={"Authorization": f"Key {settings.fal_key}",
+                         "Content-Type": "application/json"},
+                json={"prompt": model_prompt, "image_size": "portrait_4_3",
+                      "num_images": 1, "enable_safety_checker": True},
+            )
+            model_resp.raise_for_status()
+            model_url = model_resp.json()["images"][0]["url"]
+
+            # Step 2: 把真实衣服图片转为base64
+            buf = io.BytesIO()
+            img.convert("RGB").save(buf, format="JPEG", quality=90)
+            garment_b64 = base64.b64encode(buf.getvalue()).decode()
+
+            # Step 3: 调用虚拟试穿API，把真实衣服穿到模特身上
+            tryon_resp = await client.post(
+                "https://fal.run/fal-ai/kolors-virtual-tryon",
+                headers={"Authorization": f"Key {settings.fal_key}",
+                         "Content-Type": "application/json"},
+                json={
+                    "human_image_url": model_url,
+                    "garment_image_url": f"data:image/jpeg;base64,{garment_b64}",
+                },
+            )
+            tryon_resp.raise_for_status()
+            result_url = tryon_resp.json()["image"]["url"]
+
+            # 下载结果图片
+            img_resp = await client.get(result_url)
+            return Image.open(io.BytesIO(img_resp.content)).convert("RGBA")
+
     except Exception as e:
-        print(f"AI模特生成失败: {e}，使用原图")
+        print(f"虚拟试穿失败: {e}，使用原图")
         return img
 
 
@@ -325,34 +358,12 @@ async def process_all_images(product_data: dict) -> dict:
             img = img.crop((0, top, w, top + new_h))
         return img.convert("RGB").resize(IMG_SIZE, Image.LANCZOS)
 
-    # ===== 主图1: 正面模特白底图 9:16（AI生成）=====
-    try:
-        seed1 = hash(title_en) % 999999
-        model_desc1 = get_random_model_desc(seed1)
-        prompt1 = (
-            f"Professional fashion photography, {model_desc1}, "
-            f"wearing {garment_desc}, full body shot, front view, "
-            f"pure white background, high resolution, 9:16 vertical, 4k"
-        )
-        main1_bytes = await generate_flux_image(prompt1, "portrait_9_16")
-        main1 = Image.open(io.BytesIO(main1_bytes)).convert("RGB")
-    except Exception:
-        main1 = crop_to_9_16(front_img)
+    # ===== 主图1: 正面模特白底图 9:16 =====
+    main1 = crop_to_9_16(front_img)
     result["main_1"] = img_to_bytes(main1)
 
-    # ===== 主图2: 背面模特白底图 9:16（AI生成）=====
-    try:
-        seed2 = hash(title_en + "back") % 999999
-        model_desc2 = get_random_model_desc(seed2)
-        prompt2 = (
-            f"Professional fashion photography, {model_desc2}, "
-            f"wearing {garment_desc}, full body shot, back view showing garment from behind, "
-            f"pure white background, high resolution, 9:16 vertical, 4k"
-        )
-        main2_bytes = await generate_flux_image(prompt2, "portrait_9_16")
-        main2 = Image.open(io.BytesIO(main2_bytes)).convert("RGB")
-    except Exception:
-        main2 = crop_to_9_16(back_img)
+    # ===== 主图2: 背面模特白底图 9:16 =====
+    main2 = crop_to_9_16(back_img)
     result["main_2"] = img_to_bytes(main2)
 
     # ===== 主图3: 正面+背面模特合并白底图 9:16 =====

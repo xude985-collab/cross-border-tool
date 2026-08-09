@@ -312,8 +312,8 @@ function TabBasicInfo({ product }: { product: any }) {
 
         {/* 8个图片格子 */}
         <div className="border border-gray-200 rounded-lg p-4 bg-white">
-          <div className="flex gap-3">
-            {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => {
+          <div className="flex gap-3 flex-wrap">
+            {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => {
               const url = product[`img_main_${i + 1}`];
               return (
                 <div key={i} className="flex flex-col items-center">
@@ -357,7 +357,7 @@ function TabBasicInfo({ product }: { product: any }) {
 
         <div className="flex items-center gap-4 mb-3">
           <span className="text-sm font-medium">美国</span>
-          {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => (
+          {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => (
             <div key={i} className="flex flex-col items-center">
               <div className="text-xs text-white bg-[#666] px-1.5 py-0.5 rounded-t min-w-[80px] text-center text-[10px]">
                 {label}
