@@ -50,6 +50,70 @@ async def remove_background(img: Image.Image) -> Image.Image:
     return img
 
 
+def has_model(img: Image.Image) -> bool:
+    """简易检测图片是否有模特（根据图片宽高比和肤色像素占比判断）"""
+    rgb = img.convert("RGB").resize((200, 200))
+    pixels = list(rgb.getdata())
+    skin_count = 0
+    for r, g, b in pixels:
+        # 肤色检测（简易HSV范围）
+        if r > 95 and g > 40 and b > 20 and max(r, g, b) - min(r, g, b) > 15 and abs(r - g) > 15 and r > g and r > b:
+            skin_count += 1
+    skin_ratio = skin_count / len(pixels)
+    # 肤色占比>5%认为有模特
+    return skin_ratio > 0.05
+
+
+# 20个不同的模特模板（不同肤色/体型/姿势）
+MODEL_TEMPLATES = [
+    "young asian woman, slim build, standing straight, front view, studio lighting",
+    "young caucasian woman, medium build, standing straight, front view, natural light",
+    "young african woman, slim build, standing straight, front view, studio lighting",
+    "young latina woman, medium build, casual pose, front view, soft light",
+    "young asian woman, slim build, slight turn, front view, studio",
+    "young caucasian woman, tall, standing confident, front view, studio",
+    "young mixed race woman, slim build, relaxed pose, front view, natural",
+    "young asian woman, petite build, standing straight, front view, bright studio",
+    "young european woman, medium build, hands on hips, front view, studio",
+    "young southeast asian woman, slim build, standing elegant, front view, soft studio",
+    "young caucasian woman, athletic build, casual stance, front view, natural",
+    "young korean woman, slim build, gentle pose, front view, clean studio",
+    "young african american woman, curvy build, confident pose, front view, studio",
+    "young japanese woman, petite, standing natural, front view, bright light",
+    "young brazilian woman, medium build, relaxed, front view, warm studio",
+    "young chinese woman, slim build, elegant pose, front view, white studio",
+    "young indian woman, medium build, standing graceful, front view, studio",
+    "young scandinavian woman, tall slim, minimal pose, front view, clean light",
+    "young thai woman, petite build, soft pose, front view, studio lighting",
+    "young middle eastern woman, medium build, standing poised, front view, studio",
+]
+
+
+async def ensure_model_image(img: Image.Image, garment_desc: str, idx: int) -> Image.Image:
+    """
+    确保图片有模特：
+    - 如果原图有模特 → 直接返回
+    - 如果没有模特 → 用AI直接生成模特穿衣图
+    """
+    if has_model(img):
+        return img
+
+    # 没有模特，纯AI生成模特穿衣服图片
+    try:
+        import random
+        model_desc = MODEL_TEMPLATES[idx % len(MODEL_TEMPLATES)]
+        prompt = (
+            f"Professional fashion photography, {model_desc}, "
+            f"wearing {garment_desc}, full body shot, "
+            f"white background, high resolution commercial photo, 9:16 vertical, 4k"
+        )
+        result_bytes = await generate_flux_image(prompt, "portrait_9_16")
+        return Image.open(io.BytesIO(result_bytes)).convert("RGBA")
+    except Exception as e:
+        print(f"AI模特生成失败: {e}，使用原图")
+        return img
+
+
 def compose_on_white(fg: Image.Image, size=(800, 1000), padding=0.08) -> Image.Image:
     """将透明图贴到白底，等比缩放并居中"""
     w, h = size
@@ -253,6 +317,14 @@ async def process_all_images(product_data: dict) -> dict:
     front_img = source_imgs[0]
     back_img = source_imgs[1] if len(source_imgs) > 1 else source_imgs[0]
 
+    # ---------- 确保有模特（没模特自动AI生成）----------
+    style = attrs.get("风格", attrs.get("Style", "casual"))
+    material = attrs.get("材质", attrs.get("面料", "fabric"))
+    garment_desc = f"{title_en}, {style} style, {material} material"
+
+    front_img = await ensure_model_image(front_img, garment_desc, idx=0)
+    back_img = await ensure_model_image(back_img, garment_desc + ", back view", idx=1)
+
     # ---------- 抠图 ----------
     front_fg = await remove_background(front_img)
     back_fg = await remove_background(back_img)
@@ -273,10 +345,6 @@ async def process_all_images(product_data: dict) -> dict:
     result["main_3"] = img_to_bytes(main3)
 
     # ===== 主图4/5: 模特场景图 9:16（AI生成，带模特）=====
-    style = attrs.get("风格", attrs.get("Style", "casual"))
-    material = attrs.get("材质", attrs.get("面料", "fabric"))
-    garment_desc = f"{title_en}, {style} style, {material} material"
-
     scenes = [
         "urban street scene, city background, natural daylight, full body model shot",
         "cozy indoor coffee shop, warm lighting, lifestyle photography, full body model shot",
