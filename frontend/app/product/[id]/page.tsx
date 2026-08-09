@@ -663,13 +663,22 @@ function TabPrice({ product }: { product: any }) {
           size="small"
           pagination={false}
           bordered
-          scroll={{ x: 1100 }}
+          scroll={{ x: 1200 }}
           dataSource={[{ key: 1, country: "美国(US)" }]}
           columns={[
             { title: "发货地", dataIndex: "country", key: "country", width: 100, fixed: "left" },
+            { title: <><span className="text-red-500">*</span> 货值+物流费=含邮供货价(CNY) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+              key: "price_cny", width: 250,
+              render: () => (
+                <div className="text-sm">
+                  <div className="text-gray-500">全球/其他</div>
+                  <div>货值 - | 物流费 - | 含邮供货价 -</div>
+                  <a className="text-orange-500">设置货值与物流费</a>
+                </div>
+              )},
             { title: <><span className="text-red-500">*</span> 库存</>, key: "stock", width: 100,
               render: () => <InputNumber size="small" min={0} style={{ width: 80 }} /> },
-            { title: <><span>SKU编码</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+            { title: <>SKU编码 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
               key: "sku", width: 140,
               render: () => <Input size="small" placeholder="" suffix={<span className="text-xs text-gray-400">0/50</span>} /> },
             { title: <><span className="text-red-500">*</span> 重量 (kg) <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
@@ -686,14 +695,14 @@ function TabPrice({ product }: { product: any }) {
                   <InputNumber size="small" placeholder="高" style={{ width: 55 }} />
                 </Space>
               )},
-            { title: <><span>特殊商品类型</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+            { title: <>特殊商品类型 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
               key: "special_type", width: 130,
               render: () => <Select size="small" defaultValue="normal" style={{ width: 100 }}>
                 <Option value="normal">普货</Option>
                 <Option value="sensitive">敏感货</Option>
                 <Option value="battery">含电池</Option>
               </Select> },
-            { title: <><span>是否销售</span> <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
+            { title: <>是否销售 <Tooltip title=""><QuestionCircleOutlined className="text-gray-400 text-xs" /></Tooltip></>,
               key: "on_sale", width: 100,
               render: () => <Switch defaultChecked checkedChildren="是" unCheckedChildren="否" /> },
           ]}
