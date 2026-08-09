@@ -246,162 +246,357 @@ function TabShipping() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Tab 2: 基本信息（类目 + 标题 + 属性 + 图片 + SKU）
+// Tab 2: 基本信息（完全仿照速卖通）
 // ═══════════════════════════════════════════════════════════
 function TabBasicInfo({ product }: { product: any }) {
   return (
-    <div className="space-y-4">
-      {/* ─── 类目 ─── */}
-      <Card size="small" title={<><span className="text-red-500">* </span>商品类目</>}>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 bg-orange-50 border border-orange-200 rounded px-3 py-2 text-sm">
-            <span className="text-orange-600 font-medium">Women&apos;s Clothing</span>
-            <span className="text-gray-400 mx-2">&gt;</span>
-            <span>Dresses</span>
-            <span className="text-gray-400 mx-2">&gt;</span>
-            <span>Casual Dresses</span>
-          </div>
-          <Button size="small" type="link">修改类目</Button>
+    <div className="space-y-6">
+      {/* ─── 商品图片 ─── */}
+      <div>
+        <div className="flex items-center gap-1 mb-3">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">商品图片</span>
+          <Tooltip title="图片横纵比例支持1:1（像素≥800*800）或3:4（像素≥750*1000），支持jpg、jpeg、png格式">
+            <QuestionCircleOutlined className="text-gray-400" />
+          </Tooltip>
         </div>
-      </Card>
+
+        {/* 8个图片格子 */}
+        <div className="border border-gray-200 rounded-lg p-4 bg-white">
+          <div className="flex gap-3">
+            {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => {
+              const url = product[`img_main_${i + 1}`];
+              return (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="text-xs text-white bg-[#666] px-2 py-0.5 rounded-t min-w-[90px] text-center">
+                    {label}
+                  </div>
+                  <div className={`w-[90px] h-[90px] border border-dashed border-gray-300 rounded-b
+                    flex flex-col items-center justify-center bg-white cursor-pointer hover:border-blue-400
+                    ${url ? "border-solid border-green-400" : ""}`}>
+                    {url
+                      ? <Image src={url} width={90} height={90} style={{ objectFit: "cover" }} alt="" preview={true} />
+                      : <>
+                          <PlusOutlined className="text-blue-500 text-lg" />
+                          <span className="text-xs text-gray-400 mt-1">添加图片</span>
+                        </>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* AI图片翻译按钮 */}
+          <div className="mt-3">
+            <Button size="small" className="border-blue-400 text-blue-500">
+              <span className="bg-blue-500 text-white text-xs px-1 rounded mr-1">Ai</span>
+              图片翻译
+            </Button>
+          </div>
+
+          <div className="text-xs text-gray-400 mt-2">
+            图片横纵比例支持1:1（像素≥800*800）或3:4（像素≥750*1000），支持jpg、jpeg、png格式；
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 分国家上传 ─── */}
+      <div className="border border-gray-200 rounded-lg p-4 bg-white">
+        <div className="text-sm text-gray-500 mb-3">
+          支持分国家上传商品图片，如未上传，则在前台默认展示通用商品图片。
+        </div>
+
+        <div className="flex items-center gap-4 mb-3">
+          <span className="text-sm font-medium">美国</span>
+          {["商品正面图","商品背面图","商品实拍图","商品侧面图","商品细节图","商品细节图","商品细节图","商品细节图"].map((label, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <div className="text-xs text-white bg-[#666] px-1.5 py-0.5 rounded-t min-w-[80px] text-center text-[10px]">
+                {label}
+              </div>
+              <div className="w-[80px] h-[70px] border border-dashed border-gray-300 rounded-b
+                flex flex-col items-center justify-center bg-white cursor-pointer hover:border-blue-400">
+                <PlusOutlined className="text-blue-500" />
+                <span className="text-[10px] text-gray-400 mt-0.5">添加图片</span>
+              </div>
+            </div>
+          ))}
+          <a className="text-blue-500 text-xs whitespace-nowrap ml-auto">复制商品图片</a>
+        </div>
+      </div>
+
+      {/* ─── 发布语言 ─── */}
+      <div className="flex items-center gap-3">
+        <span className="text-red-500">*</span>
+        <span className="font-medium">发布语言</span>
+        <Tooltip title="选择商品面向买家展示的语言"><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+        <Select defaultValue="en" style={{ width: 200 }}>
+          <Option value="en">英文</Option>
+          <Option value="pt">葡萄牙语</Option>
+          <Option value="es">西班牙语</Option>
+          <Option value="fr">法语</Option>
+          <Option value="ru">俄语</Option>
+        </Select>
+      </div>
 
       {/* ─── 商品标题 ─── */}
-      <Card size="small" title={<><span className="text-red-500">* </span>商品标题</>}>
-        <Form.Item name="title_en" noStyle
-          rules={[{ required: true, max: 128, message: "标题必填，最多128字符" }]}>
-          <Input
-            showCount
-            maxLength={128}
-            size="large"
-            placeholder="请输入商品标题（英文），最多128个字符"
-            suffix={<Tooltip title="标题公式：核心卖点+目标人群+产品特征+热搜词"><QuestionCircleOutlined /></Tooltip>}
-          />
-        </Form.Item>
-        <div className="mt-2 text-xs text-gray-400">
-          建议格式：核心卖点 + 适用人群 + 产品类型 + 热搜关键词
+      <div>
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">商品标题</span>
+          <Tooltip title="建议格式：核心卖点+适用人群+产品类型+热搜关键词">
+            <QuestionCircleOutlined className="text-gray-400" />
+          </Tooltip>
         </div>
-      </Card>
+        <div className="flex items-center gap-2">
+          <Form.Item name="title_en" noStyle>
+            <Input
+              showCount
+              maxLength={255}
+              size="large"
+              placeholder="请输入商品标题"
+              style={{ flex: 1 }}
+            />
+          </Form.Item>
+          <Button type="link">翻译</Button>
+        </div>
+        <div className="mt-2">
+          <Button size="small" className="border-blue-400 text-blue-500">
+            <span className="bg-blue-500 text-white text-xs px-1 rounded mr-1">Ai</span>
+            标题生成
+          </Button>
+        </div>
+      </div>
+
+      {/* ─── 类目 ─── */}
+      <div>
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">类目</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Form.Item name="category_path" noStyle>
+            <Input
+              size="large"
+              placeholder="请选择或搜索类目"
+              style={{ width: 500 }}
+              suffix={<span className="text-gray-400 cursor-pointer">🔍</span>}
+              allowClear
+            />
+          </Form.Item>
+        </div>
+        <div className="mt-2">
+          <Button size="small" className="border-blue-400 text-blue-500">
+            <span className="bg-blue-500 text-white text-xs px-1 rounded mr-1">Ai</span>
+            类目查询
+          </Button>
+        </div>
+      </div>
+
+      {/* ─── 营销图 ─── */}
+      <div>
+        <div className="flex items-center gap-1 mb-2">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">营销图</span>
+          <span className="text-xs text-blue-500 ml-2">在营销导购场景，优质的商品图片（1:1白底图、3:4场景图）对导购转化有正向效果。</span>
+        </div>
+        <div className="border border-gray-200 rounded-lg p-4 bg-white">
+          <div className="flex gap-4">
+            {/* 1:1 白底图 */}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-white bg-[#666] px-2 py-0.5 rounded-t w-[120px] text-center">1:1白底图</div>
+              <div className={`w-[120px] h-[120px] border border-dashed border-gray-300 rounded-b
+                flex flex-col items-center justify-center bg-white cursor-pointer hover:border-blue-400
+                ${product.img_white_1_1 ? "border-solid border-green-400" : ""}`}>
+                {product.img_white_1_1
+                  ? <Image src={product.img_white_1_1} width={120} height={120} style={{ objectFit: "cover" }} alt="" />
+                  : <>
+                      <PlusOutlined className="text-blue-500 text-lg" />
+                      <span className="text-xs text-gray-400">添加图片</span>
+                    </>}
+              </div>
+            </div>
+            {/* 3:4 场景图 */}
+            <div className="flex flex-col items-center">
+              <div className="text-xs text-white bg-orange-500 px-2 py-0.5 rounded-t w-[90px] text-center">3:4场景图</div>
+              <div className={`w-[90px] h-[120px] border border-dashed border-gray-300 rounded-b
+                flex flex-col items-center justify-center bg-white cursor-pointer hover:border-blue-400
+                ${product.img_scene_3_4 ? "border-solid border-green-400" : ""}`}>
+                {product.img_scene_3_4
+                  ? <Image src={product.img_scene_3_4} width={90} height={120} style={{ objectFit: "cover" }} alt="" />
+                  : <>
+                      <PlusOutlined className="text-blue-500 text-lg" />
+                      <span className="text-xs text-gray-400">添加图片</span>
+                    </>}
+              </div>
+            </div>
+          </div>
+          <div className="mt-3">
+            <Button size="small" className="border-blue-400 text-blue-500">
+              <span className="bg-blue-500 text-white text-xs px-1 rounded mr-1">Ai</span>
+              图片优化
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── 商品视频 ─── */}
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="font-medium">商品视频</span>
+          <Button size="small" icon={<UploadOutlined />}>上传视频</Button>
+        </div>
+        <div className="text-xs text-orange-400">
+          请及时补充商品视频，同时需保证上传视频与商品信息一致性，如存在视频质量不符无法认定任务完成。建议视频比例为1:1或者16:9，视频时长在30秒内，视频大小在2GB内。
+        </div>
+        {/* 分国家视频 */}
+        <div className="mt-3 bg-gray-50 border border-gray-200 rounded p-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm">美国</span>
+            <Button size="small" icon={<UploadOutlined />}>上传视频</Button>
+          </div>
+        </div>
+      </div>
 
       {/* ─── 商品属性 ─── */}
-      <Card size="small" title={<><span className="text-red-500">* </span>商品属性</>}>
-        <Row gutter={[16, 12]}>
-          {[
-            { key: "Brand Name", label: "品牌", required: true, opts: ["No Brand", "OEM", "Other"] },
-            { key: "Material", label: "材质", required: true, opts: ["Cotton","Polyester","Linen","Chiffon","Silk","Blend","Other"] },
-            { key: "Style", label: "风格", required: true, opts: ["Casual","Formal","Bohemian","Streetwear","Vintage","Elegant","Other"] },
-            { key: "Silhouette", label: "廓形", required: true, opts: ["A-Line","Bodycon","Shift","Wrap","Fit and Flare","Other"] },
-            { key: "Pattern Type", label: "图案", required: true, opts: ["Solid","Floral","Striped","Plaid","Print","Leopard","Other"] },
-            { key: "Sleeve Length", label: "袖长", required: true, opts: ["Sleeveless","Short Sleeve","Half Sleeve","Long Sleeve"] },
-            { key: "Neckline", label: "领型", required: true, opts: ["V-Neck","Round Neck","Square Neck","Off Shoulder","Turtleneck","Other"] },
-            { key: "Decoration", label: "装饰", required: false, opts: ["Lace","Button","Bow","Sequins","Embroidery","None"] },
-            { key: "Dresses Length", label: "裙长", required: true, opts: ["Mini","Knee-Length","Mid-Calf","Ankle-Length","Floor-Length"] },
-            { key: "Waistline", label: "腰型", required: false, opts: ["Natural","Empire","Dropped","No Waistline"] },
-            { key: "Season", label: "季节", required: true, opts: ["Spring","Summer","Autumn","Winter","All Season"] },
-            { key: "Age Group", label: "年龄", required: false, opts: ["18-24","25-34","35-44","45+"] },
-          ].map(attr => (
-            <Col span={8} key={attr.key}>
-              <Form.Item
-                label={<span className="text-xs">{attr.required && <span className="text-red-500">* </span>}{attr.label} ({attr.key})</span>}
-                name={["attrs", attr.key]}
-                className="mb-0"
-              >
-                <Select size="small" placeholder={`选择${attr.label}`} allowClear>
-                  {attr.opts.map(o => <Option key={o} value={o}>{o}</Option>)}
+      <div>
+        <div className="flex items-center gap-1 mb-3">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">商品属性</span>
+          <Tooltip title="根据类目自动展示对应属性"><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+        </div>
+        <div className="border border-gray-200 rounded-lg p-5 bg-white">
+          <Row gutter={[48, 20]}>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="text-red-500">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">品牌</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="no_brand">No Brand</Option>
+                  <Option value="oem">OEM</Option>
+                  <Option value="other">Other</Option>
                 </Select>
-              </Form.Item>
+              </div>
+              <div className="text-xs text-blue-500 ml-[120px] mt-1 cursor-pointer">找不到品牌？<span className="text-orange-500">在这里申请新品牌!</span></div>
             </Col>
-          ))}
-        </Row>
-      </Card>
-
-      {/* ─── 商品主图 ─── */}
-      <Card size="small" title={
-        <div className="flex items-center justify-between w-full">
-          <span><span className="text-red-500">* </span>商品图片</span>
-          <span className="text-xs text-gray-400 font-normal">最多上传6张，第一张为主图，建议800×800以上正方形白底图</span>
-        </div>
-      }>
-        <div className="flex gap-3 flex-wrap">
-          {[1,2,3,4,5,6].map(i => {
-            const url = product[`img_main_${i}`];
-            return (
-              <div key={i} className="relative group">
-                <div className={`w-[120px] h-[120px] border-2 rounded flex items-center justify-center
-                  ${i === 1 ? "border-orange-400" : url ? "border-green-400" : "border-dashed border-gray-300"}
-                  bg-gray-50 overflow-hidden`}>
-                  {url
-                    ? <Image src={url} width={120} height={120} style={{ objectFit: "cover" }} alt="" />
-                    : <div className="text-center text-gray-300">
-                        <PlusOutlined className="text-2xl mb-1 block" />
-                        <span className="text-xs">上传图片</span>
-                      </div>}
-                </div>
-                {i === 1 && <div className="absolute top-0 left-0 bg-orange-500 text-white text-xs px-1 rounded-br">主图</div>}
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="text-red-500">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">高关注化学品</span>
+                <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+                <Button size="small">设置</Button>
               </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* ─── SKU信息 ─── */}
-      <Card size="small" title={<><span className="text-red-500">* </span>销售规格 (SKU)</>}>
-        {/* 颜色 */}
-        <div className="mb-4">
-          <div className="text-sm font-medium mb-2 flex items-center gap-2">
-            <span>颜色 (Color)</span>
-            <Tag color="blue">{[...new Set((product.sku_data || []).map((s: any) => (s.spec_en || s.spec || {})["Color"] || ""))].filter(Boolean).length} 个</Tag>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[...new Set((product.sku_data || []).map((s: any) => (s.spec_en || s.spec || {})["Color"] || ""))].filter(Boolean).map((c: any) => (
-              <div key={c} className="flex items-center gap-1 border border-gray-200 rounded px-2 py-1 text-sm bg-white">
-                <span>{c}</span>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="text-red-500">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">产地（国家或地区）</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="CN">中国</Option>
+                  <Option value="US">美国</Option>
+                  <Option value="JP">日本</Option>
+                  <Option value="KR">韩国</Option>
+                </Select>
               </div>
-            ))}
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="text-red-500">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">材质</span>
+                <Input placeholder="请输入或从列表选择" style={{ flex: 1 }} />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">型号</span>
+                <Input placeholder="请输入" style={{ flex: 1 }} />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">新奇特产品</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="yes">是</Option>
+                  <Option value="no">否</Option>
+                </Select>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">类型</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="dress">连衣裙(Dress)</Option>
+                  <Option value="blouse">衬衫(Blouse)</Option>
+                  <Option value="t-shirt">T恤(T-Shirt)</Option>
+                  <Option value="pants">裤子(Pants)</Option>
+                </Select>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">用途</span>
+                <Input placeholder="请输入或从列表选择" style={{ flex: 1 }} />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">风格</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="casual">Casual</Option>
+                  <Option value="formal">Formal</Option>
+                  <Option value="bohemian">Bohemian</Option>
+                  <Option value="streetwear">Streetwear</Option>
+                  <Option value="vintage">Vintage</Option>
+                </Select>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">图案</span>
+                <Input placeholder="请输入或从列表选择" style={{ flex: 1 }} />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">袖长</span>
+                <Select placeholder="请选择" style={{ flex: 1 }} allowClear>
+                  <Option value="sleeveless">无袖</Option>
+                  <Option value="short">短袖</Option>
+                  <Option value="half">中袖</Option>
+                  <Option value="long">长袖</Option>
+                </Select>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div className="flex items-center gap-3">
+                <span className="invisible">*</span>
+                <span className="text-sm text-gray-600 w-[100px] text-right shrink-0">领型</span>
+                <Input placeholder="请输入或从列表选择" style={{ flex: 1 }} />
+              </div>
+            </Col>
+          </Row>
+
+          {/* 添加自定义属性 */}
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-orange-500 text-sm cursor-pointer">添加自定义属性</span>
+            <Button size="small" type="dashed" icon={<PlusOutlined />}>添加自定义属性</Button>
+            <span className="text-xs text-gray-400">属性总数最多 100 组</span>
           </div>
         </div>
+      </div>
 
-        {/* 尺码 */}
-        <div className="mb-4">
-          <div className="text-sm font-medium mb-2 flex items-center gap-2">
-            <span>尺码 (Size)</span>
-            <Tag>{[...new Set((product.sku_data || []).map((s: any) => (s.spec_en || s.spec || {})["Size"] || ""))].filter(Boolean).length} 个</Tag>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[...new Set((product.sku_data || []).map((s: any) => (s.spec_en || s.spec || {})["Size"] || ""))].filter(Boolean).map((s: any) => (
-              <div key={s} className="border border-gray-200 rounded px-3 py-1 text-sm bg-white">{s}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* SKU价格表格 */}
-        <Table
-          size="small"
-          pagination={false}
-          scroll={{ x: 700 }}
-          dataSource={product.sku_data || []}
-          rowKey={(_: any, i: any) => i}
-          columns={[
-            { title: "颜色", key: "color", width: 100,
-              render: (_: any, r: any) => (r.spec_en || r.spec || {})["Color"] || "-" },
-            { title: "尺码", key: "size", width: 80,
-              render: (_: any, r: any) => (r.spec_en || r.spec || {})["Size"] || "-" },
-            { title: "SKU图", key: "img", width: 60,
-              render: (_: any, r: any) => r.image
-                ? <Image src={r.image} width={40} height={40} style={{ objectFit: "cover" }} alt="" />
-                : <div className="w-10 h-10 bg-gray-100 rounded" /> },
-            { title: "价格 (USD)", key: "price", width: 120,
-              render: (_: any, r: any) => (
-                <InputNumber size="small" min={0.01} step={0.01} prefix="$"
-                  defaultValue={((r.price || 0) * (product.price_multiplier || 3)).toFixed(2)}
-                  style={{ width: 100 }} />
-              )},
-            { title: "库存", dataIndex: "stock", key: "stock", width: 80,
-              render: (v: number) => <InputNumber size="small" min={0} defaultValue={v || 999} style={{ width: 70 }} /> },
-            { title: "SKU编码", key: "sku_id", width: 120,
-              render: (_: any, r: any) => <Input size="small" defaultValue={r.sku_id || ""} placeholder="可选" /> },
-          ]}
-        />
-      </Card>
+      {/* ─── 商品使用说明书 ─── */}
+      <div className="flex items-center gap-3">
+        <span className="font-medium">商品使用说明书</span>
+        <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+        <Button size="small" icon={<UploadOutlined />}>上传文件</Button>
+      </div>
     </div>
   );
 }
