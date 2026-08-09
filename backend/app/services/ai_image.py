@@ -32,21 +32,7 @@ async def download_image(url: str) -> Image.Image:
 
 
 async def remove_background(img: Image.Image) -> Image.Image:
-    """用 remove.bg API 抠图（免费50张/月），失败则返回原图"""
-    try:
-        buf = io.BytesIO()
-        img.save(buf, format="PNG")
-        async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(
-                "https://api.remove.bg/v1.0/removebg",
-                headers={"X-Api-Key": settings.removebg_key},
-                files={"image_file": ("img.png", buf.getvalue(), "image/png")},
-                data={"size": "auto"},
-            )
-            if resp.status_code == 200:
-                return Image.open(io.BytesIO(resp.content)).convert("RGBA")
-    except Exception:
-        pass
+    """不再需要抠图，直接返回原图"""
     return img
 
 
@@ -321,23 +307,56 @@ async def process_all_images(product_data: dict) -> dict:
     front_img = await ensure_model_image(front_img, garment_desc, idx=0)
     back_img = await ensure_model_image(back_img, garment_desc + ", back view", idx=1)
 
-    # ---------- 抠图 ----------
-    front_fg = await remove_background(front_img)
-    back_fg = await remove_background(back_img)
-
     # 所有主图统一 9:16 竖版 (900×1600)，全部带模特
     IMG_SIZE = (900, 1600)
 
-    # ===== 主图1: 正面模特白底图 9:16 =====
-    main1 = compose_on_white(front_fg, IMG_SIZE)
+    # ---------- 裁剪为9:16 ----------
+    def crop_to_9_16(img: Image.Image) -> Image.Image:
+        w, h = img.size
+        target_ratio = 9 / 16
+        current_ratio = w / h
+        if current_ratio > target_ratio:
+            new_w = int(h * target_ratio)
+            left = (w - new_w) // 2
+            img = img.crop((left, 0, left + new_w, h))
+        else:
+            new_h = int(w / target_ratio)
+            top = (h - new_h) // 4
+            img = img.crop((0, top, w, top + new_h))
+        return img.convert("RGB").resize(IMG_SIZE, Image.LANCZOS)
+
+    # ===== 主图1: 正面模特白底图 9:16（AI生成）=====
+    try:
+        seed1 = hash(title_en) % 999999
+        model_desc1 = get_random_model_desc(seed1)
+        prompt1 = (
+            f"Professional fashion photography, {model_desc1}, "
+            f"wearing {garment_desc}, full body shot, front view, "
+            f"pure white background, high resolution, 9:16 vertical, 4k"
+        )
+        main1_bytes = await generate_flux_image(prompt1, "portrait_9_16")
+        main1 = Image.open(io.BytesIO(main1_bytes)).convert("RGB")
+    except Exception:
+        main1 = crop_to_9_16(front_img)
     result["main_1"] = img_to_bytes(main1)
 
-    # ===== 主图2: 背面模特白底图 9:16 =====
-    main2 = compose_on_white(back_fg, IMG_SIZE)
+    # ===== 主图2: 背面模特白底图 9:16（AI生成）=====
+    try:
+        seed2 = hash(title_en + "back") % 999999
+        model_desc2 = get_random_model_desc(seed2)
+        prompt2 = (
+            f"Professional fashion photography, {model_desc2}, "
+            f"wearing {garment_desc}, full body shot, back view showing garment from behind, "
+            f"pure white background, high resolution, 9:16 vertical, 4k"
+        )
+        main2_bytes = await generate_flux_image(prompt2, "portrait_9_16")
+        main2 = Image.open(io.BytesIO(main2_bytes)).convert("RGB")
+    except Exception:
+        main2 = crop_to_9_16(back_img)
     result["main_2"] = img_to_bytes(main2)
 
     # ===== 主图3: 正面+背面模特合并白底图 9:16 =====
-    main3 = merge_two_images(main1, main2, (900, 1600), gap=10)
+    main3 = merge_two_images(main1, main2, IMG_SIZE, gap=10)
     result["main_3"] = img_to_bytes(main3)
 
     # ===== 主图4/5: 模特场景图 9:16（AI生成，带模特）=====
