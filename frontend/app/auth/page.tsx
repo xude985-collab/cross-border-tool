@@ -54,78 +54,30 @@ export default function AuthPage() {
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
           🚀 火箭跨境铺货工具
         </h1>
-        <Tabs
-          defaultActiveKey="login"
-          centered
-          items={[
-            {
-              key: "login",
-              label: "登录",
-              children: (
-                <Form onFinish={onLogin} layout="vertical">
-                  <Form.Item
-                    name="email"
-                    rules={[{ required: true, type: "email", message: "请输入正确的邮箱" }]}
-                  >
-                    <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
-                  </Form.Item>
-                  <Form.Item
-                    name="password"
-                    rules={[{ required: true, message: "请输入密码" }]}
-                  >
-                    <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
-                  </Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={loading}
-                    block
-                    size="large"
-                    className="mt-2"
-                  >
-                    登录
-                  </Button>
-                </Form>
-              ),
-            },
-            {
-              key: "register",
-              label: "注册",
-              children: (
-                <Form onFinish={onRegister} layout="vertical">
-                  <Form.Item
-                    name="email"
-                    rules={[{ required: true, type: "email", message: "请输入正确的邮箱" }]}
-                  >
-                    <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
-                  </Form.Item>
-                  <Form.Item
-                    name="full_name"
-                    rules={[{ required: true, message: "请输入姓名" }]}
-                  >
-                    <Input prefix={<UserOutlined />} placeholder="姓名" size="large" />
-                  </Form.Item>
-                  <Form.Item
-                    name="password"
-                    rules={[{ required: true, min: 6, message: "密码至少6位" }]}
-                  >
-                    <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
-                  </Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={loading}
-                    block
-                    size="large"
-                    className="mt-2"
-                  >
-                    注册
-                  </Button>
-                </Form>
-              ),
-            },
-          ]}
-        />
+        <Form onFinish={onLogin} layout="vertical">
+          <Form.Item
+            name="email"
+            rules={[{ required: true, type: "email", message: "请输入正确的邮箱" }]}
+          >
+            <Input prefix={<MailOutlined />} placeholder="邮箱" size="large" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "请输入密码" }]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            block
+            size="large"
+            className="mt-2"
+          >
+            登录
+          </Button>
+        </Form>
       </div>
     </div>
   );

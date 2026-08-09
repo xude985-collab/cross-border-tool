@@ -13,8 +13,12 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 @router.post("/register", response_model=UserResponse)
-def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """用户注册"""
+def register(
+    user_data: UserRegister,
+    current_admin: User = Depends(get_current_admin),  # 只有管理员能创建用户
+    db: Session = Depends(get_db)
+):
+    """管理员创建用户"""
     # 检查邮箱是否已存在
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
