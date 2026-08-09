@@ -14,7 +14,7 @@ from app.core.config import settings
 
 security = HTTPBearer()
 
-SECRET_KEY = settings.secret_key if hasattr(settings, 'secret_key') else "your-secret-key-change-in-production"
+SECRET_KEY = "cross-border-tool-jwt-secret-2024"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7天
 
