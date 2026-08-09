@@ -722,58 +722,164 @@ function TabPrice({ product }: { product: any }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Tab 4: 详细描述
+// Tab 4: 详细描述（仿速卖通）
 // ═══════════════════════════════════════════════════════════
 function TabDescription({ product }: { product: any }) {
   return (
-    <div className="space-y-4">
-      {/* 商品描述 */}
-      <Card size="small" title="商品描述（Description）">
-        <Form.Item name="description_en" noStyle>
-          <TextArea rows={12} placeholder="AI自动生成的英文商品描述..." />
-        </Form.Item>
-        <div className="mt-2 text-xs text-gray-400">
-          支持HTML格式。AI已根据商品特征自动生成描述，可手动编辑。
+    <div className="space-y-6">
+      {/* 子Tab */}
+      <div className="border-b border-gray-200">
+        <div className="text-blue-600 font-medium pb-2 border-b-2 border-blue-600 inline-block">
+          发布语言(英语)
         </div>
-      </Card>
+      </div>
 
-      {/* 详情图 */}
-      <Card size="small" title={
-        <div className="flex items-center justify-between w-full">
-          <span>详情图片</span>
-          <span className="text-xs text-gray-400 font-normal">AI生成10张详情图，展示产品卖点</span>
+      {/* 详描语言 */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-gray-600">详描语言</span>
+        <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+        <Select defaultValue="en" style={{ width: 200 }}>
+          <Option value="en">英语(发布语言)</Option>
+          <Option value="pt">葡萄牙语</Option>
+          <Option value="es">西班牙语</Option>
+          <Option value="fr">法语</Option>
+        </Select>
+      </div>
+
+      {/* PC详描编辑 */}
+      <div>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-red-500">*</span>
+          <span className="font-medium">PC详描编辑</span>
+          <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+          <Button size="small" style={{ color: "#d4380d", borderColor: "#d4380d" }}>导入无线详情描述</Button>
+          <Button size="small">预览</Button>
+          <Button size="small" className="border-blue-400 text-blue-500">
+            <span className="bg-blue-500 text-white text-xs px-1 rounded mr-1">Ai</span>
+            卖点生成
+          </Button>
         </div>
-      }>
-        <div className="flex flex-wrap gap-3">
-          {Array.from({ length: 10 }, (_, i) => {
-            const url = product[`img_detail_${i + 1}`];
-            return (
-              <div key={i} className="relative">
-                <div className={`w-[100px] h-[100px] border rounded overflow-hidden
-                  ${url ? "border-green-400" : "border-dashed border-gray-300"}
-                  flex items-center justify-center bg-gray-50`}>
-                  {url
-                    ? <Image src={url} width={100} height={100} style={{ objectFit: "cover" }} alt="" />
-                    : <div className="text-gray-300 text-xs text-center">
-                        <PlusOutlined className="block mb-1" />
-                        详情图{i+1}
-                      </div>}
+
+        {/* 富文本编辑器 */}
+        <div className="border border-gray-300 rounded">
+          {/* 工具栏第一行 */}
+          <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-200 bg-white">
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded font-bold text-sm">B</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded italic text-sm">I</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded underline text-sm">U</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded line-through text-sm">S</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-sm">A</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-sm">🎨</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">≡</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">≡</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">≡</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">≡</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⋮≡</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⋮≡</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⇤</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⇥</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⇥</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">🧹</button>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">↩</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">↪</button>
+          </div>
+
+          {/* 工具栏第二行 */}
+          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-200 bg-white">
+            <Select size="small" defaultValue="body" style={{ width: 70 }} bordered={false}>
+              <Option value="body">正文</Option>
+              <Option value="h1">标题1</Option>
+              <Option value="h2">标题2</Option>
+              <Option value="h3">标题3</Option>
+            </Select>
+            <Select size="small" defaultValue="default" style={{ width: 90 }} bordered={false}>
+              <Option value="default">默认字体</Option>
+              <Option value="arial">Arial</Option>
+              <Option value="times">Times</Option>
+            </Select>
+            <Select size="small" defaultValue="default" style={{ width: 90 }} bordered={false}>
+              <Option value="default">默认字号</Option>
+              <Option value="12">12px</Option>
+              <Option value="14">14px</Option>
+              <Option value="16">16px</Option>
+              <Option value="18">18px</Option>
+            </Select>
+            <div className="w-px h-5 bg-gray-300 mx-1" />
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">🔗</button>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">🖼</button>
+            <div className="relative">
+              <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">📱</button>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-0.5 rounded">NEW</span>
+            </div>
+            <button className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-xs">⛶</button>
+          </div>
+
+          {/* 编辑区域 */}
+          <Form.Item name="description_en" noStyle>
+            <TextArea
+              rows={16}
+              bordered={false}
+              style={{ background: "#f5f5f0", resize: "none", minHeight: 350 }}
+              placeholder="在此编辑商品详细描述...（AI已自动生成，可手动修改）"
+            />
+          </Form.Item>
+        </div>
+      </div>
+
+      {/* APP详描编辑 */}
+      <div>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="font-medium text-gray-700">APP详描编辑</span>
+          <Tooltip title=""><QuestionCircleOutlined className="text-gray-400" /></Tooltip>
+          <Button size="small" style={{ color: "#d4380d", borderColor: "#d4380d" }}>导入PC详描</Button>
+          <span className="text-sm text-gray-400">若未进行APP详描编辑，将自动同步PC详描</span>
+        </div>
+
+        {/* 模板卡片 */}
+        <div className="border border-gray-200 rounded-lg p-6">
+          <div className="flex gap-6">
+            {/* 空白模板 */}
+            <div className="flex flex-col items-center cursor-pointer hover:opacity-80">
+              <div className="w-[140px] h-[180px] border border-dashed border-gray-300 rounded
+                flex flex-col items-center justify-center bg-white">
+                <div className="text-4xl text-gray-300 mb-2">📄</div>
+              </div>
+              <span className="text-sm text-gray-600 mt-2">空白模板</span>
+            </div>
+
+            {/* 通用详描模板 */}
+            <div className="flex flex-col items-center cursor-pointer hover:opacity-80">
+              <div className="w-[140px] h-[180px] border border-gray-300 rounded overflow-hidden bg-white">
+                <div className="p-2">
+                  <div className="text-[9px] text-gray-400">Item Description</div>
+                  <div className="text-[10px] font-bold text-orange-600 mt-1">Selling Point</div>
+                  <div className="text-[8px] text-gray-400 leading-tight mt-0.5">
+                    Describe the details of the selling point or service, persuading them to your potential...
+                  </div>
+                </div>
+                <div className="bg-gray-200 h-[80px] mx-2 rounded flex items-center justify-center">
+                  <span className="text-[9px] text-gray-400">许要添加样图</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </Card>
+              <span className="text-sm text-gray-600 mt-2">通用详描模板</span>
+            </div>
 
-      {/* 尺码图 */}
-      <Card size="small" title="尺码对照表">
-        <div className="w-[200px] h-[140px] border border-dashed border-gray-300 rounded
-                        flex items-center justify-center bg-gray-50">
-          {product.img_main_9
-            ? <Image src={product.img_main_9} width={200} height={140} style={{ objectFit: "contain" }} alt="" />
-            : <span className="text-gray-300 text-xs">AI生成尺码图</span>}
+            {/* 查看更多 */}
+            <div className="flex flex-col items-center justify-center cursor-pointer hover:opacity-80">
+              <div className="w-[140px] h-[180px] border border-dashed border-gray-300 rounded
+                flex flex-col items-center justify-center bg-white">
+                <a className="text-blue-500 text-sm text-center">查看更多<br/>详描模板</a>
+              </div>
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
