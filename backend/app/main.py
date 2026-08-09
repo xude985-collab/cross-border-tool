@@ -25,3 +25,12 @@ app.include_router(admin_setup.router)  # 临时：创建管理员（已有prefi
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/debug-token")
+def debug_token(token: str):
+    from jose import jwt
+    try:
+        payload = jwt.decode(token, "cross-border-tool-jwt-secret-2024", algorithms=["HS256"])
+        return {"ok": True, "payload": payload}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "error_type": type(e).__name__}
