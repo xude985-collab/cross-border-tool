@@ -1,97 +1,73 @@
 """
-Celery 核心处理任务
+后台处理任务（无 Celery/Redis 依赖，用 asyncio 后台运行）
 每个商品的完整处理流水线: 1688抓取 → AI文本 → AI图片 → 标记就绪
 """
 import asyncio
-import io
-from celery import Celery
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.product import Product, ProductStatus
 
-celery_app = Celery("tasks", broker=settings.redis_url, backend=settings.redis_url)
 
-
-def run_async(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
-
-
-@celery_app.task(bind=True, max_retries=3)
-def process_product_task(self, product_id: int):
-    """完整处理单个商品"""
+async def process_product_task(product_id: int, source_url: str, data: dict):
+    """后台处理单个商品"""
     db = SessionLocal()
     try:
         product = db.query(Product).filter(Product.id == product_id).first()
         if not product:
             return
 
-        # Step 1: 抓取1688数据
-        product.status = ProductStatus.fetching
-        db.commit()
-
-        from app.services.alibaba import alibaba_service
-        data = run_async(alibaba_service.get_product(product.alibaba_product_id))
-
-        product.original_title_zh = data["title_zh"]
-        product.original_description = data["description"]
-        product.original_images = data["images"]
-        product.original_sku = data["skus"]
-        product.original_attributes = data["attributes"]
-        product.price_source = data["price_min"]
-        db.commit()
-
-        # Step 2: AI生成文本
         product.status = ProductStatus.ai_processing
         db.commit()
 
-        from app.services.ai_text import generate_title, generate_description, translate_sku_attributes
-        title_result = run_async(generate_title(data))
-        desc_result = run_async(generate_description(data))
-        sku_translated = run_async(translate_sku_attributes(data["skus"]))
+        # Step 1: AI文本生成
+        from app.services.ai_text import generate_product_text
 
-        product.title_en = title_result["title_en"]
-        product.title_zh = title_result["title_zh"]
-        product.description_en = desc_result["description_en"]
-        product.description_zh = desc_result["description_zh"]
-        product.bullet_points = desc_result["bullet_points"]
+        text_result = await generate_product_text(data)
+        product.title_en = text_result.get("title_en", "")
+        product.description_en = text_result.get("description_en", "")
+        product.description_zh = text_result.get("description_zh", "")
+        product.bullet_points = text_result.get("bullet_points", [])
+        product.aliexpress_attrs = text_result.get("attributes", {})
+
+        # SKU翻译
+        sku_translated = text_result.get("skus", data.get("skus", []))
         product.sku_data = sku_translated
-        product.price_final = round((data["price_min"] or 10) * product.price_multiplier, 2)
         db.commit()
 
-        # Step 3: AI图片处理（9张主图 + 10张详情图 + 1:1白底 + 3:4场景图）
+        # Step 2: AI图片处理
         from app.services.ai_image import process_all_images
         from app.services.storage import upload_image_bytes
 
+        desc_result = text_result
         product_data_for_img = {
-            "title_zh": data["title_zh"],
+            "title_zh": data.get("title_zh", ""),
             "title_en": product.title_en or "",
-            "images": data["images"],
-            "attributes": data["attributes"],
+            "images": data.get("images", []),
+            "attributes": data.get("attributes", {}),
             "skus": sku_translated,
             "bullet_points": desc_result.get("bullet_points", []),
         }
-        img_result = run_async(process_all_images(product_data_for_img))
+        img_result = await process_all_images(product_data_for_img)
 
-        # 上传所有图片到OSS，写入对应字段
+        # 上传所有图片到OSS
         for key, val in img_result.items():
             if isinstance(val, bytes):
-                url = run_async(upload_image_bytes(val, f"products/{product_id}/{key}.jpg"))
-                if hasattr(product, key):
-                    setattr(product, key, url)
+                url = await upload_image_bytes(val, f"products/{product_id}/{key}.jpg")
+                col_name = f"img_{key}" if not key.startswith("img_") else key
+                if hasattr(product, col_name):
+                    setattr(product, col_name, url)
 
-        # 组装速卖通上传主图列表（取前6张：主图1/2/3/4/5/9）
+        # 组装速卖通上传主图列表
         listing_imgs = [
             getattr(product, f"img_main_{i}", None)
             for i in [1, 2, 3, 4, 5, 9]
         ]
         product.images_listing = [u for u in listing_imgs if u][:6]
 
-        # Step 4: 预测速卖通类目
-        from app.services.aliexpress import aliexpress_service
+        # Step 3: 类目预测
         try:
-            cat_id = run_async(aliexpress_service.forecast_category(
-                product.title_en or "", data["attributes"]
-            ))
+            from app.services.aliexpress import predict_category
+            cat_id = await predict_category(product.title_en)
             product.category_id = cat_id
         except Exception:
             pass
@@ -105,6 +81,14 @@ def process_product_task(self, product_id: int):
             "upload_error": str(exc)[:500],
         })
         db.commit()
-        raise self.retry(exc=exc, countdown=60)
     finally:
         db.close()
+
+
+def start_processing(product_id: int, source_url: str, data: dict):
+    """启动后台处理（非阻塞）"""
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        asyncio.ensure_future(process_product_task(product_id, source_url, data))
+    else:
+        loop.run_until_complete(process_product_task(product_id, source_url, data))
