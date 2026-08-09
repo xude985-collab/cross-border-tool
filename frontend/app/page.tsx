@@ -1,20 +1,48 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Table, Tag, Card, Row, Col, Statistic } from "antd";
-import { PlusOutlined, ShoppingOutlined, RocketOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { Button, Table, Tag, Card, Row, Col, Statistic, Dropdown } from "antd";
+import { PlusOutlined, ShoppingOutlined, RocketOutlined, CheckCircleOutlined, UserOutlined, SettingOutlined, LogoutOutlined } from "@ant-design/icons";
 import { getBatches } from "@/lib/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [batches, setBatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    checkAuth();
     getBatches()
       .then(setBatches)
       .catch(() => setBatches([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/auth");
+      return;
+    }
+
+    try {
+      const res = await fetch("https://api.tukeng.com.cn/api/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setUser(data);
+    } catch {
+      router.push("/auth");
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    router.push("/auth");
+  };
 
   const stats = {
     total: batches.reduce((s, b) => s + (b.total_products || 0), 0),
@@ -38,6 +66,21 @@ export default function Dashboard() {
       render: (v: string) => v ? new Date(v).toLocaleString("zh-CN") : "-" },
   ];
 
+  const userMenuItems = [
+    ...(user?.role === "admin" ? [{
+      key: "admin",
+      icon: <SettingOutlined />,
+      label: "用户管理",
+      onClick: () => router.push("/admin"),
+    }] : []),
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "退出登录",
+      onClick: logout,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航 */}
@@ -46,14 +89,23 @@ export default function Dashboard() {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <RocketOutlined className="text-white text-lg" />
           </div>
-          <span className="text-lg font-bold text-gray-800">跨境铺货工具</span>
+          <span className="text-lg font-bold text-gray-800">🚀 火箭跨境铺货工具</span>
           <span className="text-xs text-gray-400 ml-2">1688 → 速卖通 AI一键铺货</span>
         </div>
-        <Link href="/import">
-          <Button type="primary" icon={<PlusOutlined />} size="large">
-            新建批次
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/import">
+            <Button type="primary" icon={<PlusOutlined />} size="large">
+              新建批次
+            </Button>
+          </Link>
+          {user && (
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Button icon={<UserOutlined />}>
+                {user.full_name || user.email}
+              </Button>
+            </Dropdown>
+          )}
+        </div>
       </div>
 
       {/* 统计卡片 */}
