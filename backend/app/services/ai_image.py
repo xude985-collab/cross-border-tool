@@ -64,29 +64,24 @@ def has_model(img: Image.Image) -> bool:
     return skin_ratio > 0.05
 
 
-# 20个不同的模特模板（不同肤色/体型/姿势）
-MODEL_TEMPLATES = [
-    "young asian woman, slim build, standing straight, front view, studio lighting",
-    "young caucasian woman, medium build, standing straight, front view, natural light",
-    "young african woman, slim build, standing straight, front view, studio lighting",
-    "young latina woman, medium build, casual pose, front view, soft light",
-    "young asian woman, slim build, slight turn, front view, studio",
-    "young caucasian woman, tall, standing confident, front view, studio",
-    "young mixed race woman, slim build, relaxed pose, front view, natural",
-    "young asian woman, petite build, standing straight, front view, bright studio",
-    "young european woman, medium build, hands on hips, front view, studio",
-    "young southeast asian woman, slim build, standing elegant, front view, soft studio",
-    "young caucasian woman, athletic build, casual stance, front view, natural",
-    "young korean woman, slim build, gentle pose, front view, clean studio",
-    "young african american woman, curvy build, confident pose, front view, studio",
-    "young japanese woman, petite, standing natural, front view, bright light",
-    "young brazilian woman, medium build, relaxed, front view, warm studio",
-    "young chinese woman, slim build, elegant pose, front view, white studio",
-    "young indian woman, medium build, standing graceful, front view, studio",
-    "young scandinavian woman, tall slim, minimal pose, front view, clean light",
-    "young thai woman, petite build, soft pose, front view, studio lighting",
-    "young middle eastern woman, medium build, standing poised, front view, studio",
-]
+# 模特特征随机组合池（排列组合可生成 10000+ 种不重复模特）
+MODEL_ETHNICITY = ["asian", "caucasian", "african", "latina", "middle eastern", "southeast asian", "korean", "japanese", "chinese", "indian", "brazilian", "scandinavian", "mediterranean", "eastern european", "mixed race"]
+MODEL_BUILD = ["slim", "petite", "medium", "athletic", "tall slim", "curvy", "lean"]
+MODEL_HAIR = ["long straight black hair", "short bob hair", "wavy brown hair", "curly hair", "shoulder length hair", "ponytail", "long blonde hair", "pixie cut", "braided hair", "messy bun", "straight brown hair", "long wavy hair", "bangs with straight hair", "side part long hair"]
+MODEL_POSE = ["standing straight", "slight turn", "hands on hips", "casual stance", "one hand in pocket", "arms relaxed", "confident pose", "gentle pose", "walking pose", "leaning slightly", "crossed arms relaxed", "hands behind back"]
+MODEL_AGE = ["young", "early 20s", "mid 20s", "late 20s", "early 30s"]
+
+
+def get_random_model_desc(seed: int) -> str:
+    """根据seed生成随机模特描述，同一seed结果一致，不同seed不重复"""
+    import random
+    rng = random.Random(seed)
+    ethnicity = rng.choice(MODEL_ETHNICITY)
+    build = rng.choice(MODEL_BUILD)
+    hair = rng.choice(MODEL_HAIR)
+    pose = rng.choice(MODEL_POSE)
+    age = rng.choice(MODEL_AGE)
+    return f"{age} {ethnicity} woman, {build} build, {hair}, {pose}, front view"
 
 
 async def ensure_model_image(img: Image.Image, garment_desc: str, idx: int) -> Image.Image:
@@ -101,7 +96,8 @@ async def ensure_model_image(img: Image.Image, garment_desc: str, idx: int) -> I
     # 没有模特，纯AI生成模特穿衣服图片
     try:
         import random
-        model_desc = MODEL_TEMPLATES[idx % len(MODEL_TEMPLATES)]
+        seed = random.randint(0, 999999) + idx
+        model_desc = get_random_model_desc(seed)
         prompt = (
             f"Professional fashion photography, {model_desc}, "
             f"wearing {garment_desc}, full body shot, "

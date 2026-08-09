@@ -885,74 +885,115 @@ function TabDescription({ product }: { product: any }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Tab 5: 其它设置
+// Tab 5: 其它设置（仿速卖通）
 // ═══════════════════════════════════════════════════════════
 function TabOther() {
   return (
-    <Card>
-      <Row gutter={[24, 16]}>
-        <Col span={12}>
-          <Form.Item label="商品分组" name="product_group">
-            <Select placeholder="选择店铺分组" allowClear>
-              <Option value="new">新品上架</Option>
-              <Option value="hot">热销</Option>
-              <Option value="clearance">清仓</Option>
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item label="服务承诺" name="service_promise">
-            <Select mode="multiple" placeholder="可多选">
-              <Option value="on_time_delivery">准时发货</Option>
-              <Option value="buyer_protection">买家保障</Option>
-              <Option value="refund_guarantee">退款保障</Option>
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item label="退货政策" name="return_policy">
-            <Select defaultValue="15">
-              <Option value="no">不支持退货</Option>
-              <Option value="15">15天退货</Option>
-              <Option value="30">30天退货</Option>
-              <Option value="60">60天退货</Option>
-            </Select>
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item label="商品单位" name="product_unit">
-            <Select defaultValue="piece">
-              <Option value="piece">件 (Piece)</Option>
-              <Option value="set">套 (Set)</Option>
-              <Option value="pair">双 (Pair)</Option>
-              <Option value="lot">批 (Lot)</Option>
-            </Select>
-          </Form.Item>
-        </Col>
-      </Row>
+    <div className="space-y-8">
+      <div className="text-xl font-medium">其它设置</div>
 
-      <Divider />
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm">自定义货号</span>
-          <Input placeholder="可选，你的内部编号" style={{ width: 300 }} />
+      {/* 资质信息 */}
+      <div className="flex items-start gap-4">
+        <div className="flex items-center gap-1 w-[130px] text-right shrink-0 pt-1">
+          <span className="text-red-500">*</span>
+          <span className="text-sm text-gray-700">资质信息</span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">打包重量（g）</span>
-          <InputNumber min={1} defaultValue={300} addonAfter="g" style={{ width: 160 }} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">包装尺寸（cm）</span>
-          <Space>
-            <InputNumber min={1} defaultValue={30} placeholder="长" style={{ width: 80 }} />
-            <span>×</span>
-            <InputNumber min={1} defaultValue={20} placeholder="宽" style={{ width: 80 }} />
-            <span>×</span>
-            <InputNumber min={1} defaultValue={5} placeholder="高" style={{ width: 80 }} />
-          </Space>
+        <div>
+          <span className="text-sm text-gray-600">无需填写资质信息</span>
+          <div className="mt-3">
+            <Button type="primary">刷新资质信息</Button>
+            <span className="text-sm text-gray-400 ml-3">
+              修改「标题」「属性」「运费模版」后，资质要求可能会变更，请点击获取最新资质信息
+            </span>
+          </div>
         </div>
       </div>
-    </Card>
+
+      {/* 支付宝 */}
+      <div className="flex items-start gap-4">
+        <div className="w-[130px] text-right shrink-0 pt-0.5">
+          <span className="text-sm text-gray-700">支付宝</span>
+        </div>
+        <div>
+          <Checkbox defaultChecked><span className="text-sm">支持</span></Checkbox>
+          <div className="text-sm text-blue-500 mt-1">
+            通过全球速卖通交易平台进行的交易须统一使用规定的收款方式－支付宝担保服务。
+          </div>
+        </div>
+      </div>
+
+      {/* 商品发布条款 */}
+      <div className="flex items-start gap-4">
+        <div className="flex items-center gap-1 w-[130px] text-right shrink-0 pt-0.5">
+          <span className="text-red-500">*</span>
+          <span className="text-sm text-gray-700">商品发布条款</span>
+        </div>
+        <div>
+          <Checkbox defaultChecked>
+            <span className="text-sm">我已阅读并同意了以下条款以及其他相关规则</span>
+          </Checkbox>
+          <div className="mt-2 text-sm">
+            <a className="text-blue-500">Transaction Services Agreement</a>
+            <span className="text-gray-400">（阿里巴巴中国用户交易协议）、</span>
+            <a className="text-blue-500">Special Funds Early Disbursement Policy for Polish Sellers</a>
+            <br />
+            <a className="text-blue-500">速卖通平台放款政策特别约定</a>
+          </div>
+        </div>
+      </div>
+
+      {/* 关联欧盟责任人 */}
+      <div className="flex items-center gap-4">
+        <div className="w-[130px] text-right shrink-0">
+          <span className="text-sm text-gray-700">关联欧盟责任人</span>
+        </div>
+        <Select placeholder="请选择" style={{ width: 300 }} allowClear />
+        <a className="text-blue-500 text-sm">欧盟责任人管理</a>
+      </div>
+
+      {/* 关联制造商 */}
+      <div className="flex items-center gap-4">
+        <div className="w-[130px] text-right shrink-0">
+          <span className="text-sm text-gray-700">关联制造商</span>
+        </div>
+        <Select placeholder="请选择" style={{ width: 300 }} allowClear />
+        <a className="text-blue-500 text-sm">制造商管理</a>
+      </div>
+
+      {/* GPSR警告 */}
+      <div className="ml-[146px]">
+        <div className="text-sm leading-relaxed">
+          <span className="text-gray-600">欧盟通用产品安全法规（GPSR）要求，</span>
+          <span className="text-red-500 font-medium">售往欧盟的商品需要关联【欧盟责任人】和【制造商】信息，同时需要将欧盟责任人和制造商信息展示在商品实物标签中，否则商品将在欧盟市场屏蔽。</span>
+          <span className="text-gray-600">少数特殊类目不属于管控范围，无需关联，点击查看</span>
+          <a className="text-blue-500">看详情</a>
+        </div>
+
+        <div className="mt-4 text-sm text-gray-600 leading-relaxed">
+          <div>为遵守《欧洲无障碍法案》（&quot;EAA&quot;）（指令 (EU) 2019/882），请确保：</div>
+          <div>- 图片具有描述性替代文本，以帮助视障用户理解您的产品</div>
+          <div>- 产品描述有清晰的文本结构（例如标题、段落或列表），以免影响屏幕阅读器用户的无障碍浏览</div>
+          <div>- 媒体文件符合无障碍标准（带字幕的视频或带标签的 PDF 文件）</div>
+        </div>
+      </div>
+
+      {/* 发货期 */}
+      <div className="flex items-start gap-4">
+        <div className="w-[130px] text-right shrink-0 pt-0.5">
+          <span className="text-sm text-gray-700">发货期</span>
+        </div>
+        <div>
+          <span className="text-sm text-gray-600">海外托管店铺&quot;发货期&quot;属性已取消。</span>
+          <div className="mt-2 text-sm text-red-500 leading-relaxed">
+            商家需要在订单支付成功后7个工作日内填写单号并全部声明发货。若商家未在7个工作日内填写发货信息并全部声明发货，系统将关闭订单，货款全额退还给买家。建议及时填写发货信息并声明发货，避免出现货款流失的情况。
+          </div>
+          <div className="mt-2 text-sm text-gray-600">
+            平台要求海外托管商家在买家付款后2个工作日内全部声明发货（具体以
+            <a className="text-blue-500">全球速卖通海外发货管理规定</a>
+            中【发货时效规范】为准）。
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
