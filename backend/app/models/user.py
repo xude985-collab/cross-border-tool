@@ -2,7 +2,7 @@
 用户模型
 """
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from app.core.database import Base
@@ -17,8 +17,8 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(100))
-    role = Column(SQLEnum("admin", "user", name="user_role"), default="user")
-    status = Column(SQLEnum("active", "disabled", name="user_status"), default="active")
+    role = Column(String(20), default="user")     # "admin" | "user"
+    status = Column(String(20), default="active")  # "active" | "disabled"
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

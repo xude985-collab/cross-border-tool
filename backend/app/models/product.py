@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, JSON, Enum, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, JSON, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -75,7 +75,7 @@ class Product(Base):
     aliexpress_product_id = Column(String(64))  # 上传后的商品ID
     upload_error = Column(Text)
 
-    status = Column(Enum(ProductStatus), default=ProductStatus.pending)
+    status = Column(String(32), default=ProductStatus.pending)
     batch_id = Column(Integer, ForeignKey("batches.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
