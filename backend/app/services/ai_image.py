@@ -277,18 +277,42 @@ def make_detail_page_image(index: int, title_en: str,
 
 
 async def generate_flux_image(prompt: str, aspect: str = "square_hd") -> bytes:
-    """调用 fal.ai Flux Pro 生成图片"""
+    """
+    用 DALL-E 3 生成图片（替代原 Flux）
+    aspect: "square_hd" (1024x1024) | "portrait_16_9" (1024x1792竖版) | "landscape_16_9" (1792x1024横版)
+    """
+    # 映射到 DALL-E 3 的尺寸格式
+    size_map = {
+        "square_hd": "1024x1024",
+        "square": "1024x1024",
+        "portrait_16_9": "1024x1792",
+        "portrait_9_16": "1024x1792",
+        "portrait_4_3": "1024x1792",
+        "landscape_16_9": "1792x1024",
+        "landscape_4_3": "1792x1024",
+    }
+    size = size_map.get(aspect, "1024x1024")
+
     async with httpx.AsyncClient(timeout=120) as client:
         resp = await client.post(
-            "https://fal.run/fal-ai/flux/dev",
-            headers={"Authorization": f"Key {settings.fal_key}",
-                     "Content-Type": "application/json"},
-            json={"prompt": prompt, "image_size": aspect,
-                  "num_images": 1, "enable_safety_checker": True},
+            "https://api.openai.com/v1/images/generations",
+            headers={
+                "Authorization": f"Bearer {settings.openai_api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "dall-e-3",
+                "prompt": prompt,
+                "n": 1,
+                "size": size,
+                "quality": "hd",
+            }
         )
         resp.raise_for_status()
         data = resp.json()
-        image_url = data["images"][0]["url"]
+        image_url = data["data"][0]["url"]
+
+        # 下载生成的图片
         ir = await client.get(image_url)
         return ir.content
 
