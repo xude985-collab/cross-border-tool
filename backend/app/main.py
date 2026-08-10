@@ -3,17 +3,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import products, batches, upload
 from app.routes import users, admin_setup
 from app.core.database import engine, Base
-import sqlalchemy
+from sqlalchemy import inspect, text
 
-# 智能建表：已有表跳过，只创建缺失的
-from app.models.product import Product, Batch
-from app.models.user import User
+# 初始化数据库：删掉所有旧表重建，避免enum冲突
+def init_database():
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+    # 只删 cross-border-tool 自己的表，不影响 luckybuy
+    our_tables = {"users", "products", "batches"}
+    tables_to_drop = [t for t in existing_tables if t in our_tables]
+    if tables_to_drop:
+        for table_name in tables_to_drop:
+            with engine.connect() as conn:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+                conn.commit()
+    # 创建新表
+    Base.metadata.create_all(bind=engine)
 
-for table in Base.metadata.sorted_tables:
-    try:
-        table.create(bind=engine, checkfirst=True)
-    except Exception:
-        pass
+init_database()
 
 app = FastAPI(title="跨境铺货SaaS", version="1.0.0")
 
