@@ -3,8 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import products, batches, upload
 from app.routes import users, admin_setup
 from app.core.database import engine, Base
+import sqlalchemy
 
-Base.metadata.create_all(bind=engine)
+# 智能建表：已有表跳过，只创建缺失的
+from app.models.product import Product, Batch
+from app.models.user import User
+
+for table in Base.metadata.sorted_tables:
+    try:
+        table.create(bind=engine, checkfirst=True)
+    except Exception:
+        pass
 
 app = FastAPI(title="跨境铺货SaaS", version="1.0.0")
 
