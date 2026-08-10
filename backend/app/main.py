@@ -6,23 +6,27 @@ from app.core.database import engine, Base
 from sqlalchemy import inspect, text
 
 # 初始化数据库：删掉所有旧表重建，避免enum冲突
-def init_database():
-    inspector = inspect(engine)
-    existing_tables = inspector.get_table_names()
-    # 只删 cross-border-tool 自己的表，不影响 luckybuy
-    our_tables = {"users", "products", "batches"}
-    tables_to_drop = [t for t in existing_tables if t in our_tables]
-    if tables_to_drop:
-        for table_name in tables_to_drop:
-            with engine.connect() as conn:
-                conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
-                conn.commit()
-    # 创建新表
-    Base.metadata.create_all(bind=engine)
-
-init_database()
-
 app = FastAPI(title="跨境铺货SaaS", version="1.0.0")
+
+
+@app.on_event("startup")
+def init_database():
+    import sys
+    try:
+        inspector = inspect(engine)
+        existing_tables = inspector.get_table_names()
+        our_tables = {"users", "products", "batches"}
+        tables_to_drop = [t for t in existing_tables if t in our_tables]
+        if tables_to_drop:
+            with engine.connect() as conn:
+                for table_name in tables_to_drop:
+                    conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+                conn.commit()
+        Base.metadata.create_all(bind=engine)
+        print("✓ Database initialized", file=sys.stderr)
+    except Exception as e:
+        print(f"⚠ Database init error: {e}", file=sys.stderr)
+        Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
