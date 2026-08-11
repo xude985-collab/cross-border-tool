@@ -3,30 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import products, batches, upload
 from app.routes import users, admin_setup
 from app.core.database import engine, Base
-from sqlalchemy import inspect, text
 
-# 初始化数据库：删掉所有旧表重建，避免enum冲突
 app = FastAPI(title="跨境铺货SaaS", version="1.0.0")
 
 
 @app.on_event("startup")
 def init_database():
+    """幂等建表：只创建缺失的表，绝不删除已存在的表/数据。"""
     import sys
     try:
-        inspector = inspect(engine)
-        existing_tables = inspector.get_table_names()
-        our_tables = {"users", "products", "batches"}
-        tables_to_drop = [t for t in existing_tables if t in our_tables]
-        if tables_to_drop:
-            with engine.connect() as conn:
-                for table_name in tables_to_drop:
-                    conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
-                conn.commit()
+        # create_all 只新建不存在的表，对已有表和数据无副作用
         Base.metadata.create_all(bind=engine)
-        print("✓ Database initialized", file=sys.stderr)
+        print("✓ Database ready (create_all, no drop)", file=sys.stderr)
     except Exception as e:
         print(f"⚠ Database init error: {e}", file=sys.stderr)
-        Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
