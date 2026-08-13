@@ -5,7 +5,7 @@ from typing import List
 from app.core.database import get_db
 from app.models.product import Product, Batch, ProductStatus
 from app.services.alibaba import alibaba_service
-from app.tasks.process import process_product_task
+from app.tasks.process import start_processing
 
 router = APIRouter()
 
@@ -53,8 +53,11 @@ async def import_products(data: ProductUrlsIn, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(product)
         product_ids.append(product.id)
-        # 发送到Celery队列异步处理
-        process_product_task.delay(product.id)
+
+    # 批量启动后台处理（带并发限制）
+    for pid in product_ids:
+        p = db.query(Product).filter(Product.id == pid).first()
+        start_processing(p.id, p.alibaba_url, {"title_zh": p.original_title_zh or ""})
 
     return {"batch_id": batch.id, "queued": len(product_ids)}
 

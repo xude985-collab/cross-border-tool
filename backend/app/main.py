@@ -35,25 +35,3 @@ app.include_router(admin_setup.router)  # 临时：创建管理员（已有prefi
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
-@app.get("/debug-db")
-def debug_db():
-    from sqlalchemy import inspect as sqla_inspect, text
-    ins = sqla_inspect(engine)
-    try:
-        tables = ins.get_table_names()
-        with engine.connect() as conn:
-            result = conn.execute(text("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public'"))
-            pg_tables = [row[0] for row in result.fetchall()]
-        return {"sqlalchemy_tables": tables, "pg_tables": pg_tables}
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.get("/debug-token")
-def debug_token(token: str):
-    from jose import jwt
-    try:
-        payload = jwt.decode(token, "cross-border-tool-jwt-secret-2024", algorithms=["HS256"])
-        return {"ok": True, "payload": payload}
-    except Exception as e:
-        return {"ok": False, "error": str(e), "error_type": type(e).__name__}
