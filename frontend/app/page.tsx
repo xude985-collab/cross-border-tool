@@ -28,7 +28,7 @@ export default function Dashboard() {
     }
 
     try {
-      const res = await fetch("https://cross-border-tool.onrender.com/api/users/me", {
+      const res = await fetch("https://cross-border-api.onrender.com/api/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
