@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
 from app.core.database import get_db
+from app.core.auth import get_current_user
 from app.models.product import Product, Batch, ProductStatus
 from app.services.alibaba import alibaba_service
 from app.tasks.process import start_processing
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 class ProductUrlsIn(BaseModel):

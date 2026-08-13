@@ -52,9 +52,15 @@ class Alibaba1688Service:
             raise ValueError(f"1688 API 错误: {data}")
 
     async def get_products_batch(self, product_ids: list[str]) -> list[dict]:
-        """批量获取商品（并发）"""
+        """批量获取商品（限 3 并发避免被封）"""
         import asyncio
-        tasks = [self.get_product(pid) for pid in product_ids]
+        sem = asyncio.Semaphore(3)
+
+        async def limited(pid):
+            async with sem:
+                return await self.get_product(pid)
+
+        tasks = [limited(pid) for pid in product_ids]
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return [r for r in results if not isinstance(r, Exception)]
 

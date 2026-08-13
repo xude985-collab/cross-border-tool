@@ -5,6 +5,7 @@ from typing import List
 from app.core.database import get_db
 from app.models.product import Product, ProductStatus
 from app.services.aliexpress import aliexpress_service
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
@@ -14,7 +15,11 @@ class UploadIn(BaseModel):
 
 
 @router.post("/batch", summary="批量上传到速卖通")
-async def batch_upload(data: UploadIn, db: Session = Depends(get_db)):
+async def batch_upload(
+    data: UploadIn,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
     """将已处理好的商品批量上传到速卖通"""
     results = {"success": [], "failed": []}
 
@@ -28,12 +33,20 @@ async def batch_upload(data: UploadIn, db: Session = Depends(get_db)):
             product.status = ProductStatus.uploading
             db.commit()
 
+            main_images = [
+                getattr(product, f"img_main_{i}", None)
+                for i in range(1, 10)
+            ]
+            detail_images = [
+                getattr(product, f"img_detail_{i}", None)
+                for i in range(1, 11)
+            ]
+
             image_urls = {
-                "white_bg_front": (product.images_white_bg or [None])[0],
-                "white_bg_back": (product.images_white_bg or [None, None])[1] if len(product.images_white_bg or []) > 1 else None,
-                "scene_images": product.images_scene or [],
-                "detail_images": product.images_detail or [],
-                "size_guide": (product.images_size_guide or [None])[0],
+                "main_images": [u for u in main_images if u],
+                "white_bg": product.img_white_1_1,
+                "scene": product.img_scene_3_4,
+                "detail_images": [u for u in detail_images if u],
             }
 
             payload = aliexpress_service.build_product_payload(

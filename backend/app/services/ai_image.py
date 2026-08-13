@@ -130,7 +130,7 @@ async def ensure_model_image(img: Image.Image, garment_desc: str, idx: int) -> I
 
 
 def compose_on_white(fg: Image.Image, size=(800, 1000), padding=0.08) -> Image.Image:
-    """将透明图贴到白底，等比缩放并居中"""
+    """将图片贴到白底，等比缩放并居中"""
     w, h = size
     pad_x = int(w * padding)
     pad_y = int(h * padding)
@@ -140,7 +140,10 @@ def compose_on_white(fg: Image.Image, size=(800, 1000), padding=0.08) -> Image.I
     canvas = Image.new("RGB", size, (255, 255, 255))
     px = (w - fg_copy.width) // 2
     py = (h - fg_copy.height) // 2
-    canvas.paste(fg_copy, (px, py), fg_copy.split()[3])
+    if fg_copy.mode == "RGBA":
+        canvas.paste(fg_copy, (px, py), fg_copy.split()[3])
+    else:
+        canvas.paste(fg_copy.convert("RGB"), (px, py))
     return canvas
 
 
@@ -450,7 +453,7 @@ async def process_all_images(product_data: dict) -> dict:
     result["main_9"] = img_to_bytes(main9)
 
     # ===== 1:1 白底模特主图（模特穿衣服，白底）=====
-    white_sq = compose_on_white(front_fg, (800, 800), padding=0.05)
+    white_sq = compose_on_white(front_img, (800, 800), padding=0.05)
     result["white_1_1"] = img_to_bytes(white_sq)
 
     # ===== 3:4 模特场景图（模特穿衣服的场景图）=====
@@ -464,7 +467,7 @@ async def process_all_images(product_data: dict) -> dict:
     except Exception as e:
         print(f"3:4场景图生成失败: {e}")
         # 失败时用抠图模特贴白底
-        result["scene_3_4"] = img_to_bytes(compose_on_white(front_fg, (750, 1000)))
+        result["scene_3_4"] = img_to_bytes(compose_on_white(front_img, (750, 1000)))
 
     # ===== 10张详情图 =====
     detail_content_imgs = source_imgs[2:] if len(source_imgs) > 2 else source_imgs

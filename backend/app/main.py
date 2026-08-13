@@ -12,7 +12,6 @@ def init_database():
     """幂等建表：只创建缺失的表，绝不删除已存在的表/数据。"""
     import sys
     try:
-        # create_all 只新建不存在的表，对已有表和数据无副作用
         Base.metadata.create_all(bind=engine)
         print("✓ Database ready (create_all, no drop)", file=sys.stderr)
     except Exception as e:
@@ -20,7 +19,13 @@ def init_database():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://tukeng.com.cn",
+        "https://www.tukeng.com.cn",
+        "https://cross-border-tool-one.vercel.app",
+        "https://cross-border-tool-r4d2.vercel.app",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
