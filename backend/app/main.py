@@ -40,3 +40,15 @@ app.include_router(admin_setup.router)  # 临时：创建管理员（已有prefi
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/debug/env-check")
+def env_check():
+    """临时调试：检查关键环境变量是否配置"""
+    from app.core.config import settings
+    return {
+        "openai_key_exists": bool(settings.openai_api_key and len(settings.openai_api_key) > 10),
+        "fal_key_exists": bool(settings.fal_key and len(settings.fal_key) > 10),
+        "oss_configured": bool(settings.oss_access_key_id and settings.oss_access_key_secret),
+        "alibaba_configured": bool(settings.alibaba_app_key and settings.alibaba_app_secret),
+        "aliexpress_configured": bool(settings.aliexpress_app_key and settings.aliexpress_app_secret),
+    }
