@@ -3,7 +3,8 @@ JWT token 生成和验证
 """
 from datetime import datetime, timedelta
 from typing import Optional
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -42,7 +43,7 @@ def verify_token(token: str) -> TokenData:
                 detail="Invalid token",
             )
         return TokenData(user_id=user_id, email=email, role=role)
-    except JWTError:
+    except InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
